@@ -12,3 +12,8 @@
 ```bash
 npx shadcn@latest init
 ```
+
+#### Theming
+```bash
+npm i next-themes
+```
