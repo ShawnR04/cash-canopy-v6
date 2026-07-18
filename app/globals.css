@@ -1,1 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Poppins", var(--font-sans); /* Safely prepends Poppins to your sans stack */
+  --font-mono: var(--font-geist-mono);
+  --font-heading: "Poppins", var(--font-sans);
+  
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  
+  /* Semantic States */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Main Layout */
+  --background: oklch(0.98 0 0); /* Soft clean white off-bg */
+  --foreground: oklch(0.14 0.02 245); /* Very deep navy/charcoal */
+
+  /* Shadcn Component Logic */
+  --card: oklch(1 0 0); 
+  --card-foreground: oklch(0.14 0.02 245); 
+  --popover: oklch(1 0 0); 
+  --popover-foreground: oklch(0.14 0.02 245); 
+
+  /* Primary Color - Vibrant Blue */
+  --primary: oklch(0.62 0.18 245); 
+  --primary-foreground: oklch(1 0 0); 
+
+  /* Secondary Color - Professional Corporate Blue */
+  --secondary: oklch(0.35 0.14 250); 
+  --secondary-foreground: oklch(1 0 0); 
+
+  /* Muted Elements */
+  --muted: oklch(0.95 0.01 245); 
+  --muted-foreground: oklch(0.55 0.02 245); 
+
+  /* Accents */
+  --accent: oklch(0.95 0.03 240); /* Ice Blue tint */
+  --accent-foreground: oklch(0.35 0.14 250); 
+
+  /* --- DISTINCT SEMANTIC STATES --- */
+  /* Destructive - Crisp Coral Red */
+  --destructive: oklch(0.60 0.22 25); 
+  --destructive-foreground: oklch(1 0 0); 
+
+  /* Warning - True Amber Gold (Fixed similarity to destructive) */
+  --warning: oklch(0.76 0.18 75); 
+  --warning-bg: oklch(0.96 0.04 80); 
+
+  /* Success - Balanced Emerald Green */
+  --success: oklch(0.68 0.18 150); 
+  --success-bg: oklch(0.95 0.03 155); 
+
+  /* Interface UI elements */
+  --border: oklch(0.90 0.01 245); 
+  --input: oklch(0.90 0.01 245); 
+  --ring: oklch(0.62 0.18 245); 
+  --radius: 0.625rem;
+
+  /* Sidebar Colors */
+  --sidebar: oklch(1 0 0); 
+  --sidebar-foreground: oklch(0.14 0.02 245); 
+  --sidebar-primary: oklch(0.62 0.18 245); 
+  --sidebar-border: oklch(0.90 0.01 245); 
+  --sidebar-ring: oklch(0.62 0.18 245);
+}
+
+.dark {
+  /* Main Layout */
+  --background: oklch(0.14 0.02 245); /* Deep Dark Navy */
+  --foreground: oklch(0.97 0.01 245); 
+
+  /* Shadcn Component Logic */
+  --card: oklch(0.18 0.02 245); /* Elevated card background */
+  --card-foreground: oklch(0.97 0.01 245);
+  --popover: oklch(0.18 0.02 245);
+  --popover-foreground: oklch(0.97 0.01 245);
+
+  /* Primary Color - Adapted for dark background contrast */
+  --primary: oklch(0.68 0.16 245); 
+  --primary-foreground: oklch(0.14 0.02 245);
+
+  /* Secondary Color */
+  --secondary: oklch(0.28 0.08 250);
+  --secondary-foreground: oklch(0.97 0.01 245);
+
+  /* Muted Elements */
+  --muted: oklch(0.22 0.03 245);
+  --muted-foreground: oklch(0.65 0.02 245);
+
+  /* Accents */
+  --accent: oklch(0.25 0.06 245);
+  --accent-foreground: oklch(0.97 0.01 245);
+
+  /* --- DISTINCT SEMANTIC STATES (DARK MODE) --- */
+  /* Destructive - Deep energetic Red */
+  --destructive: oklch(0.58 0.20 25); 
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Warning - Highly visible Dark Mode Amber Gold */
+  --warning: oklch(0.79 0.16 75); 
+  --warning-bg: oklch(0.24 0.05 75); 
+
+  /* Success - Crisp Emerald Mint */
+  --success: oklch(0.72 0.15 150);
+  --success-bg: oklch(0.22 0.04 150);
+
+  /* Interface UI elements */
+  --border: oklch(1 0 0 / 12%); 
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.68 0.16 245);
+
+  /* Sidebar Colors */
+  --sidebar: oklch(0.16 0.02 245);
+  --sidebar-foreground: oklch(0.97 0.01 245);
+  --sidebar-primary: oklch(0.68 0.16 245);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.16 245);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
