@@ -11,6 +11,7 @@
 #### Shadcn and its components
 ```bash
 npx shadcn@latest init
+npx shadcn@latest add label pagination input popover sonner dropdown-menu alert-dialog dialog select textarea
 ```
 
 ### 2. Database Connection
