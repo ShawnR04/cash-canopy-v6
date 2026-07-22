@@ -6,7 +6,7 @@ export default async function Home(){
         <div className="">
             Hello {session?.user.username}
 
-            <a href="">categories</a>
+            <br/><a href="pages/goals">goals</a>
         </div>
     );
 }
