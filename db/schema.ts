@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, serial, numeric, varchar } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -74,6 +74,34 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+// Dataabse Tables
+// Goals Table
+export const goalsTable = pgTable("goals", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+    
+  name: text("name").notNull(),
+  targetAmount: numeric("target_amount", { precision: 12, scale: 2 }).notNull(),
+  currentAmount: numeric("current_amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  status: text("status", { enum: ["active", "achieved", "paused"] })
+    .default("active")
+    .notNull(),
+
+  targetDate: timestamp("target_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+},
+(table) => ({
+  goalsUserIdIdx: index("goals_user_id_idx").on(table.userId),
+  goalsUserIdTargetDateIdx: index("goals_user_id_target_date_idx").on(table.userId, table.targetDate),
+}));
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

@@ -8,6 +8,13 @@
       "when": 1784422914071,
       "tag": "0000_friendly_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784677248308,
+      "tag": "0001_fine_wrecking_crew",
+      "breakpoints": true
     }
   ]
 }
