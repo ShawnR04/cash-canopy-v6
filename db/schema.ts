@@ -77,6 +77,40 @@ export const verification = pgTable(
 
 // Database Tables
 
+//? Transactions Table
+export const transactionsTable = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+    
+  date: timestamp("date").notNull(),
+  description: text("description").notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  type: text("type", { enum: ["Income", "Expense"] }).notNull(),
+
+  categoryId: integer("category_id")
+    .references(() => categoriesTable.id, { onDelete: "set null" }),
+
+  budgetId: integer("budget_id")
+    .references(() => budgetsTable.id, { onDelete: "set null" }),
+
+  goalId: integer("goal_id")
+    .references(() => goalsTable.id, { onDelete: "set null" }),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+},
+(table) => ({
+  transactionsUserIdIdx: index("transactions_user_id_idx").on(table.userId),
+  transactionsUserIdDateIdx: index("transactions_user_id_date_idx").on(table.userId, table.date),
+  transactionsCategoryIdIdx: index("transactions_category_id_idx").on(table.categoryId),
+}));
+
 //? Budgets Table
 export const budgetsTable = pgTable("budgets", {
   id: serial("id").primaryKey(),
@@ -175,12 +209,43 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+export const transactionsRelations = relations(transactionsTable, ({ one }) => ({
+  user: one(user, {
+    fields: [transactionsTable.userId],
+    references: [user.id],
+  }),
+  category: one(categoriesTable, {
+    fields: [transactionsTable.categoryId],
+    references: [categoriesTable.id],
+  }),
+  budget: one(budgetsTable, {
+    fields: [transactionsTable.budgetId],
+    references: [budgetsTable.id],
+  }),
+  goal: one(goalsTable, {
+    fields: [transactionsTable.goalId],
+    references: [goalsTable.id],
+  }),
+}));
+
+export const budgetsRelations = relations(budgetsTable, ({ one, many }) => ({
+  user: one(user, {
+    fields: [budgetsTable.userId],
+    references: [user.id],
+  }),
+  category: one(categoriesTable, {
+    fields: [budgetsTable.categoryId],
+    references: [categoriesTable.id],
+  }),
+  transactions: many(transactionsTable),
+}));
+
 export const categoriesRelations = relations(categoriesTable, ({ one, many }) => ({
   user: one(user, {
     fields: [categoriesTable.userId],
     references: [user.id],
   }),
-  //transactions: many(transactionsTable),
+  transactions: many(transactionsTable),
   budgets: many(budgetsTable),
 }));
 
@@ -189,10 +254,11 @@ export const goalsRelations = relations(goalsTable, ({ one, many }) => ({
     fields: [goalsTable.userId],
     references: [user.id],
   }),
-  //transactions: many(transactionsTable),
+  transactions: many(transactionsTable),
 }));
 
 //! Insertion
-export type insertGoal = typeof goalsTable.$inferInsert
-export type InsertCategory = typeof categoriesTable.$inferInsert;
+export type InsertTransaction = typeof transactionsTable.$inferInsert;
 export type InsertBudget = typeof budgetsTable.$inferInsert;
+export type InsertCategory = typeof categoriesTable.$inferInsert;
+export type insertGoal = typeof goalsTable.$inferInsert

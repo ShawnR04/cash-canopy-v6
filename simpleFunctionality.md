@@ -837,7 +837,7 @@ export default function BudgetForm({ categories = [] }: { categories?: CategoryO
 }
 ```
 
-## BUDGETS CLIENT
+## BUDGETS PAGE
 ```tsx
 import { getCategories } from "@/app/actions/categories";
 import BudgetForm from "./budgetsClient";
@@ -890,6 +890,387 @@ export async function createBudget(data: CreateBudgetInput) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to save budget.",
+    };
+  }
+}
+```
+
+## TRANSACTION FORM
+```tsx
+"use client";
+
+import React, { useState } from "react";
+import * as LucideIcons from "lucide-react";
+import { createTransaction } from "@/app/actions/transactions";
+
+interface OptionItem {
+  id: number;
+  name: string;
+  icon?: string;
+  color?: string;
+}
+
+interface TransactionFormProps {
+  categories?: OptionItem[];
+  budgets?: OptionItem[];
+  goals?: OptionItem[];
+}
+
+function DynamicIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return <LucideIcons.Receipt className={className} />;
+
+  const formattedName = name
+    .trim()
+    .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+  const IconComponent = (LucideIcons as Record<string, any>)[formattedName];
+
+  if (!IconComponent) return <LucideIcons.Receipt className={className} />;
+
+  return <IconComponent className={className} />;
+}
+
+export default function TransactionForm({
+  categories = [],
+  budgets = [],
+  goals = [],
+}: TransactionFormProps) {
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [type, setType] = useState<"Income" | "Expense">("Expense");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [budgetId, setBudgetId] = useState<number | "">("");
+  const [goalId, setGoalId] = useState<number | "">("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // --- MUTUAL EXCLUSIVITY FLAGS ---
+  const hasCategory = categoryId !== "";
+  const hasBudget = budgetId !== "";
+  const hasGoal = goalId !== "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await createTransaction({
+        description,
+        amount,
+        currency,
+        type,
+        date: date ? new Date(`${date}T00:00:00`).toISOString() : new Date().toISOString(),
+        categoryId: categoryId ? Number(categoryId) : null,
+        budgetId: budgetId ? Number(budgetId) : null,
+        goalId: goalId ? Number(goalId) : null,
+      } as any);
+
+      if (!res.success) {
+        alert(res.error);
+        return;
+      }
+
+      // Reset form on success
+      setDescription("");
+      setAmount("");
+      setCategoryId("");
+      setBudgetId("");
+      setGoalId("");
+      alert("Transaction saved successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating transaction.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const selectedCategory = categories?.find((c) => c.id === Number(categoryId));
+
+  return (
+    <div className="max-w-md mx-auto p-6 bg-white border border-zinc-200/80 rounded-2xl shadow-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        
+        {/* --- LIVE PREVIEW CARD --- */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-100 bg-gradient-to-r from-zinc-50 to-zinc-100/60 shadow-inner">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm transition-all"
+              style={{
+                backgroundColor: selectedCategory?.color || (type === "Income" ? "#10b981" : "#ef4444"),
+              }}
+            >
+              <DynamicIcon name={selectedCategory?.icon} className="w-5 h-5 drop-shadow-sm" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                {type} Transaction
+              </span>
+              <span className="font-semibold text-zinc-900 text-base">
+                {description || "Description"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span
+              className={`text-lg font-bold ${
+                type === "Income" ? "text-emerald-600" : "text-zinc-900"
+              }`}
+            >
+              {type === "Income" ? "+" : "-"}
+              {currency === "USD" ? "$" : currency} {amount || "0.00"}
+            </span>
+          </div>
+        </div>
+
+        {/* --- TYPE TOGGLE (Income / Expense) --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Transaction Type
+          </label>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-50 border border-zinc-200 rounded-xl">
+            {(["Expense", "Income"] as const).map((t) => {
+              const isSelected = type === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setType(t)}
+                  className={`p-2.5 rounded-lg text-xs font-semibold transition-all ${
+                    isSelected
+                      ? t === "Income"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-zinc-900 text-white shadow-sm"
+                      : "text-zinc-600 hover:bg-zinc-200/50"
+                  }`}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* --- DESCRIPTION --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Description
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="e.g., Apple Store, Grocery Shopping, Salary"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* --- AMOUNT & CURRENCY --- */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Amount
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Currency
+            </label>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            >
+              <option value="USD">USD</option>
+              <option value="CAD">CAD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+
+        {/* --- DATE --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Transaction Date
+          </label>
+          <input
+            type="date"
+            required
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* --- MUTUALLY EXCLUSIVE SELECTORS --- */}
+        <div className="flex flex-col gap-3 pt-2 border-t border-zinc-100">
+          <p className="text-[11px] font-medium text-zinc-400">
+            Link to one of the following (optional):
+          </p>
+
+          {/* CATEGORY SELECTOR */}
+          <div>
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Category
+            </label>
+            <select
+              disabled={hasBudget || hasGoal}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+            >
+              <option value="">Uncategorized</option>
+              {categories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* BUDGET SELECTOR */}
+            <div>
+              <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+                Budget
+              </label>
+              <select
+                disabled={hasCategory || hasGoal}
+                value={budgetId}
+                onChange={(e) => setBudgetId(e.target.value ? Number(e.target.value) : "")}
+                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              >
+                <option value="">None</option>
+                {budgets?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* GOAL SELECTOR */}
+            <div>
+              <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+                Goal
+              </label>
+              <select
+                disabled={hasCategory || hasBudget}
+                value={goalId}
+                onChange={(e) => setGoalId(e.target.value ? Number(e.target.value) : "")}
+                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              >
+                <option value="">None</option>
+                {goals?.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SUBMIT BUTTON --- */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-zinc-900 text-white p-3 rounded-xl hover:bg-zinc-800 active:scale-[0.99] disabled:opacity-50 font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 mt-2"
+        >
+          {isSubmitting ? (
+            <>
+              <LucideIcons.Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>Add Transaction</span>
+          )}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## TRANSACTION PAGE
+```tsx
+import { getCategories } from "@/app/actions/categories";
+import TransactionForm from "./transactionsClient";
+import { getBudgets } from "@/app/actions/budgets";
+import { getGoals } from "@/app/actions/goals";
+
+export default async function TransactionsPage() {
+  // Fetch all dropdown options on the server concurrently
+  const [categories, budgets, goals] = await Promise.all([
+    getCategories(),
+    getBudgets(),
+    getGoals(),
+  ]);
+
+  return (
+    <div className="p-6">
+      <TransactionForm
+        categories={categories}
+        budgets={budgets}
+        goals={goals}
+      />
+    </div>
+  );
+}
+```
+
+## TRANSACTION SERVER ACTION
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { transactionsTable } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser"; // Adjust import path if needed
+import { InferInsertModel } from "drizzle-orm";
+
+export type InsertTransaction = InferInsertModel<typeof transactionsTable>;
+
+type CreateTransactionInput = Omit<
+  InsertTransaction,
+  "id" | "userId" | "createdAt" | "updatedAt" | "date"
+> & {
+  date: string;
+};
+
+export async function createTransaction(data: CreateTransactionInput) {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    await db.insert(transactionsTable).values({
+      ...data,
+      userId,
+      date: new Date(data.date),
+      currency: data.currency ?? "USD",
+      categoryId: data.categoryId ?? null,
+      budgetId: data.budgetId ?? null,
+      goalId: data.goalId ?? null,
+    } as InsertTransaction);
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Failed to create transaction:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save transaction.",
     };
   }
 }

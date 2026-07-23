@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { budgetsTable, InsertBudget } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
+import { eq } from "drizzle-orm";
 
 // Accept dates as strings from the client form
 type CreateBudgetInput = Omit<
@@ -33,5 +34,21 @@ export async function createBudget(data: CreateBudgetInput) {
       success: false,
       error: error instanceof Error ? error.message : "Failed to save budget.",
     };
+  }
+}
+
+export async function getBudgets() {
+  try {
+    const userId = await getAuthenticatedUser();
+    return await db
+      .select({
+        id: budgetsTable.id,
+        name: budgetsTable.name,
+      })
+      .from(budgetsTable)
+      .where(eq(budgetsTable.userId, userId));
+  } catch (error) {
+    console.error("Failed to fetch budgets:", error);
+    return [];
   }
 }

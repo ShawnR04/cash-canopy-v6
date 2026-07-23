@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { goalsTable, insertGoal } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
+import { eq } from "drizzle-orm";
 
 export async function createGoal(data: insertGoal) {
   try {
@@ -24,5 +25,21 @@ export async function createGoal(data: insertGoal) {
   } catch (error) {
     console.error("Failed to create goal:", error);
     throw new Error(error instanceof Error ? error.message : "Failed to save goal.");
+  }
+}
+
+export async function getGoals() {
+  try {
+    const userId = await getAuthenticatedUser();
+    return await db
+      .select({
+        id: goalsTable.id,
+        name: goalsTable.name,
+      })
+      .from(goalsTable)
+      .where(eq(goalsTable.userId, userId));
+  } catch (error) {
+    console.error("Failed to fetch goals:", error);
+    return [];
   }
 }
