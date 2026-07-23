@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { categoriesTable, InsertCategory } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
+import { eq } from "drizzle-orm";
 
 export async function createCategory(data: InsertCategory) {
   try {
@@ -24,5 +25,27 @@ export async function createCategory(data: InsertCategory) {
       success: false, 
       error: error instanceof Error ? error.message : "Failed to save category." 
     };
+  }
+}
+
+export async function getCategories() {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    // Fetch categories belonging to the authenticated user
+    const categories = await db
+      .select({
+        id: categoriesTable.id,
+        name: categoriesTable.name,
+        icon: categoriesTable.icon,
+        color: categoriesTable.color,
+      })
+      .from(categoriesTable)
+      .where(eq(categoriesTable.userId, userId));
+
+    return categories;
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+    return [];
   }
 }

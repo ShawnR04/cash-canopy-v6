@@ -582,3 +582,315 @@ export async function createCategory(data: InsertCategory) {
   }
 }
 ```
+
+## BUDGETS FORM
+```tsx
+"use client";
+
+import React, { useState } from "react";
+import * as LucideIcons from "lucide-react";
+import { createBudget } from "@/app/actions/budgets";
+
+interface CategoryOption {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+}
+
+// --- NEW HELPER: Dynamically renders the Lucide icon from a string ---
+function DynamicIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return <LucideIcons.Wallet className={className} />; // Fallback for "Overall" budget
+
+  // Format string to PascalCase just in case (e.g. "shopping-cart" -> "ShoppingCart")
+  const formattedName = name
+    .trim()
+    .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+  // Look up the icon in the Lucide library
+  const IconComponent = (LucideIcons as Record<string, any>)[formattedName];
+
+  // If the icon isn't found, default to Wallet
+  if (!IconComponent) return <LucideIcons.Wallet className={className} />;
+
+  return <IconComponent className={className} />;
+}
+
+// Added default parameter `= []` and optional `?` operator to avoid `undefined.find()` errors
+export default function BudgetForm({ categories = [] }: { categories?: CategoryOption[] }) {
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [period, setPeriod] = useState<"Monthly" | "Weekly" | "Yearly" | "Custom">("Monthly");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await createBudget({
+        name,
+        amount,
+        currency,
+        period,
+        startDate: startDate ? new Date(`${startDate}T00:00:00`).toISOString() : new Date().toISOString(),
+        endDate: endDate ? new Date(`${endDate}T00:00:00`).toISOString() : null,
+        categoryId: categoryId ? Number(categoryId) : null,
+      } as any);
+
+      if (!res.success) {
+        alert(res.error);
+        return;
+      }
+
+      // Reset form
+      setName("");
+      setAmount("");
+      setStartDate("");
+      setEndDate("");
+      setCategoryId("");
+      alert("Budget created successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating budget.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Safe navigation with optional chaining (`categories?.find`)
+  const selectedCategory = categories?.find((c) => c.id === Number(categoryId));
+
+  return (
+    <div className="max-w-md mx-auto p-6 bg-white border border-zinc-200/80 rounded-2xl shadow-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        
+        {/* --- LIVE PREVIEW CARD --- */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-100 bg-gradient-to-r from-zinc-50 to-zinc-100/60 shadow-inner">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm transition-all"
+              style={{ backgroundColor: selectedCategory?.color || "#18181b" }}
+            >
+              {/* --- UPDATED: Using DynamicIcon here --- */}
+              <DynamicIcon name={selectedCategory?.icon} className="w-5 h-5 drop-shadow-sm" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                {period} Budget
+              </span>
+              <span className="font-semibold text-zinc-900 text-base">
+                {name || "Budget Name"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-lg font-bold text-zinc-900">
+              {currency === "USD" ? "$" : currency} {amount || "0.00"}
+            </span>
+          </div>
+        </div>
+
+        {/* --- BUDGET NAME --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Budget Name
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="e.g., Monthly Groceries, Vacation Spending"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* --- AMOUNT & CURRENCY --- */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Amount
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Currency
+            </label>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            >
+              <option value="USD">USD</option>
+              <option value="CAD">CAD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+
+        {/* --- CATEGORY SELECTOR --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Category (Optional)
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
+            className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+          >
+            <option value="">Overall (All Categories)</option>
+            {categories?.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* --- PERIOD SWITCHER --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Period
+          </label>
+          <div className="grid grid-cols-4 gap-1.5 p-1 bg-zinc-50 border border-zinc-200 rounded-xl">
+            {(["Monthly", "Weekly", "Yearly", "Custom"] as const).map((p) => {
+              const isSelected = period === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPeriod(p)}
+                  className={`p-2 rounded-lg text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-zinc-900 text-white shadow-sm"
+                      : "text-zinc-600 hover:bg-zinc-200/50"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* --- DATES --- */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              Start Date
+            </label>
+            <input
+              type="date"
+              required
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+              End Date (Optional)
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        {/* --- SUBMIT BUTTON --- */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-zinc-900 text-white p-3 rounded-xl hover:bg-zinc-800 active:scale-[0.99] disabled:opacity-50 font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 mt-2"
+        >
+          {isSubmitting ? (
+            <>
+              <LucideIcons.Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>Create Budget</span>
+          )}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## BUDGETS CLIENT
+```tsx
+import { getCategories } from "@/app/actions/categories";
+import BudgetForm from "./budgetsClient";
+
+export default async function BudgetsPage() {
+  // Fetch user categories directly on the server
+  const categories = await getCategories();
+
+  return (
+    <div className="p-6">
+      <BudgetForm categories={categories} />
+    </div>
+  );
+}
+```
+
+## BUDGETS SERVER ACTION
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { budgetsTable, InsertBudget } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser";
+
+// Accept dates as strings from the client form
+type CreateBudgetInput = Omit<
+  InsertBudget,
+  "id" | "userId" | "createdAt" | "updatedAt" | "startDate" | "endDate"
+> & {
+  startDate: string;
+  endDate?: string | null;
+};
+
+export async function createBudget(data: CreateBudgetInput) {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    // Spread input data and cast directly to satisfy Drizzle's single-row insert type
+    await db.insert(budgetsTable).values({
+      ...data,
+      userId,
+      startDate: new Date(data.startDate),
+      endDate: data.endDate ? new Date(data.endDate) : null,
+      categoryId: data.categoryId ?? null,
+    } as InsertBudget);
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Failed to create budget:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save budget.",
+    };
+  }
+}
+```

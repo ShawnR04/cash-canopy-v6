@@ -8,6 +8,7 @@ export default async function Home(){
 
             <br/><a href="pages/goals">goals</a>
             <br/><a href="pages/categories">categories</a>
+            <br/><a href="pages/budgets">budgets</a>
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index, serial, numeric, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, serial, numeric, varchar, integer } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -77,6 +77,38 @@ export const verification = pgTable(
 
 // Database Tables
 
+//? Budgets Table
+export const budgetsTable = pgTable("budgets", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+
+  name: text("name").notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+
+  period: text("period", { enum: ["Monthly", "Weekly", "Yearly", "Custom"] })
+    .default("Monthly")
+    .notNull(),
+    
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+
+  categoryId: integer("category_id")
+    .references(() => categoriesTable.id, { onDelete: "cascade" }),
+},
+(table) => ({
+  // FIX: Added missing index block for performance queries on budgets
+  budgetsUserIdIdx: index("budgets_user_id_idx").on(table.userId),
+}));
+
 //? Categories Table
 export const categoriesTable = pgTable("categories", {
   id: serial("id").primaryKey(),
@@ -143,6 +175,24 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+export const categoriesRelations = relations(categoriesTable, ({ one, many }) => ({
+  user: one(user, {
+    fields: [categoriesTable.userId],
+    references: [user.id],
+  }),
+  //transactions: many(transactionsTable),
+  budgets: many(budgetsTable),
+}));
+
+export const goalsRelations = relations(goalsTable, ({ one, many }) => ({
+  user: one(user, {
+    fields: [goalsTable.userId],
+    references: [user.id],
+  }),
+  //transactions: many(transactionsTable),
+}));
+
 //! Insertion
 export type insertGoal = typeof goalsTable.$inferInsert
 export type InsertCategory = typeof categoriesTable.$inferInsert;
+export type InsertBudget = typeof budgetsTable.$inferInsert;
