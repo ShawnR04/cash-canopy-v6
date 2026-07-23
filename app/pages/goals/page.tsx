@@ -1,8 +1,9 @@
+import GoalsClient from "./goalsClient";
 
-export default function Goals(){
-    return(
-        <>
-        <div className="">Hello Goal</div>
-        </>
-    );
-;}
+export default function Goals() {
+  return (
+    <>
+        <GoalsClient/>
+    </>
+  );
+}
