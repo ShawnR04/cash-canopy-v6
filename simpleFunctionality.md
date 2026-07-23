@@ -139,7 +139,7 @@ export default function Login(){
 
 ```
 
-## GOALS CLIENT
+## GOALS FORM
 ```tsx
 "use client";
 
@@ -300,6 +300,285 @@ export async function createGoal(data: insertGoal) {
   } catch (error) {
     console.error("Failed to create goal:", error);
     throw new Error(error instanceof Error ? error.message : "Failed to save goal.");
+  }
+}
+```
+
+## CATEGORIES FORM
+```tsx
+"use client";
+
+import React, { useState } from "react";
+import * as LucideIcons from "lucide-react";
+import { createCategory } from "@/app/actions/categories";
+
+// Pre-defined list of common icons
+const FEATURED_ICONS = [
+  "Folder",
+  "ShoppingBag",
+  "ShoppingCart",
+  "CreditCard",
+  "DollarSign",
+  "Utensils",
+  "Home",
+  "Car",
+  "HeartPulse",
+  "Plane",
+  "Briefcase",
+  "Gift",
+  "Film",
+  "Smile",
+] as const;
+
+// Preset category color palette
+const PRESET_COLORS = [
+  "#3b82f6", // Blue
+  "#10b981", // Emerald
+  "#8b5cf6", // Purple
+  "#f59e0b", // Amber
+  "#ef4444", // Red
+  "#ec4899", // Pink
+  "#06b6d4", // Cyan
+  "#84cc16", // Lime
+  "#6366f1", // Indigo
+  "#f97316", // Orange
+  "#14b8a6", // Teal
+  "#64748b", // Slate
+];
+
+// Dynamic Renderer with Fallback Icon
+function DynamicIcon({
+  name,
+  className = "w-5 h-5",
+}: {
+  name: string;
+  className?: string;
+}) {
+  const formattedName = name
+    .trim()
+    .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+  const IconComponent = (LucideIcons as Record<string, any>)[formattedName];
+
+  if (!IconComponent) {
+    return <LucideIcons.HelpCircle className={`${className} opacity-50`} />;
+  }
+
+  return <IconComponent className={className} />;
+}
+
+export default function CategoryForm() {
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState("Folder");
+  const [color, setColor] = useState("#3b82f6");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await createCategory({
+        name,
+        icon,
+        color,
+      } as any);
+
+      if (!res.success) {
+        alert(res.error);
+        return;
+      }
+
+      // Reset form
+      setName("");
+      setIcon("Folder");
+      setColor("#3b82f6");
+      alert("Category created successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating category");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-6 bg-white border border-zinc-200/80 rounded-2xl shadow-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        
+        {/* --- LIVE PREVIEW CARD --- */}
+        <div className="flex items-center gap-4 p-4 rounded-xl border border-zinc-100 bg-gradient-to-r from-zinc-50 to-zinc-100/60 shadow-inner">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md transition-all duration-300 scale-100"
+            style={{ backgroundColor: color }}
+          >
+            <DynamicIcon name={icon} className="w-6 h-6 drop-shadow-sm" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+              Category Preview
+            </span>
+            <span className="font-semibold text-zinc-900 text-lg leading-snug">
+              {name || "Category Name"}
+            </span>
+          </div>
+        </div>
+
+        {/* --- CATEGORY NAME --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Category Name
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="e.g., Groceries, Rent, Salary"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* --- ICON SELECTION & CUSTOM INPUT --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Category Icon
+          </label>
+          
+          <div className="relative mb-2.5">
+            <input
+              type="text"
+              placeholder="Search or type icon (e.g. Coffee, Zap, PiggyBank)"
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 pl-10 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all placeholder:text-zinc-400"
+            />
+            <div className="absolute left-3 top-3.5 text-zinc-400">
+              <DynamicIcon name={icon} className="w-4 h-4" />
+            </div>
+          </div>
+
+          <p className="text-[11px] text-zinc-400 mb-1.5">Or choose a quick suggestion:</p>
+          <div className="grid grid-cols-7 gap-1.5 p-2 bg-zinc-50/60 border border-zinc-200/70 rounded-xl max-h-32 overflow-y-auto">
+            {FEATURED_ICONS.map((iconName) => {
+              const isSelected = icon.toLowerCase() === iconName.toLowerCase();
+              return (
+                <button
+                  key={iconName}
+                  type="button"
+                  onClick={() => setIcon(iconName)}
+                  className={`p-2 rounded-lg flex items-center justify-center transition-all ${
+                    isSelected
+                      ? "bg-zinc-900 text-white shadow-sm"
+                      : "hover:bg-zinc-200/60 text-zinc-600"
+                  }`}
+                  title={iconName}
+                >
+                  <DynamicIcon name={iconName} className="w-4 h-4" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* --- COLOR SELECTION --- */}
+        <div>
+          <label className="block text-xs font-semibold uppercase text-zinc-500 mb-1.5 tracking-wider">
+            Color Palette
+          </label>
+
+          {/* Swatches */}
+          <div className="grid grid-cols-6 gap-2 mb-3">
+            {PRESET_COLORS.map((presetColor) => {
+              const isSelected = color.toLowerCase() === presetColor.toLowerCase();
+              return (
+                <button
+                  key={presetColor}
+                  type="button"
+                  onClick={() => setColor(presetColor)}
+                  className={`h-9 rounded-xl transition-all flex items-center justify-center ${
+                    isSelected
+                      ? "ring-2 ring-offset-2 ring-zinc-900 scale-105 shadow-sm"
+                      : "hover:scale-105 opacity-90 hover:opacity-100"
+                  }`}
+                  style={{ backgroundColor: presetColor }}
+                  title={presetColor}
+                >
+                  {isSelected && (
+                    <LucideIcons.Check className="w-4 h-4 text-white drop-shadow" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Hex Input */}
+          <div className="flex gap-2.5 items-center">
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-11 h-11 border-0 p-0 rounded-xl cursor-pointer overflow-hidden shadow-sm bg-transparent"
+            />
+            <input
+              type="text"
+              value={color}
+              placeholder="#000000"
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl font-mono uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        {/* --- SUBMIT BUTTON --- */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-zinc-900 text-white p-3 rounded-xl hover:bg-zinc-800 active:scale-[0.99] disabled:opacity-50 font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2"
+        >
+          {isSubmitting ? (
+            <>
+              <LucideIcons.Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>Create Category</span>
+          )}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## CATEGORIES SERVERT ACTION
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { categoriesTable, InsertCategory } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser";
+
+export async function createCategory(data: InsertCategory) {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    await db.insert(categoriesTable).values({
+      name: data.name,
+      icon: data.icon,
+      color: data.color,
+      userId: userId,
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Failed to create category:", error);
+    
+    // Return a structured object instead of throwing so the client gets the exact message
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to save category." 
+    };
   }
 }
 ```

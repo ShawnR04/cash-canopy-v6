@@ -75,8 +75,29 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-// Dataabse Tables
-// Goals Table
+// Database Tables
+
+//? Categories Table
+export const categoriesTable = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+
+  name: text("name").notNull(),
+  icon: text("icon").notNull(),
+  color: text("color").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+},
+(table) => ({
+  categoriesUserIdIdx: index("categories_user_id_idx").on(table.userId),
+}));
+
+//? Goals Table
 export const goalsTable = pgTable("goals", {
   id: serial("id").primaryKey(),
   userId: text("user_id")
@@ -122,4 +143,6 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+//! Insertion
 export type insertGoal = typeof goalsTable.$inferInsert
+export type InsertCategory = typeof categoriesTable.$inferInsert;
