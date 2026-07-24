@@ -22,7 +22,7 @@ export default async function Home(){
     return(
         <>
             <HomeClient
-                session={username}
+                username={username}
                 version={version}
                 dashboardTab={<Dashboard/>}
                 transactionsTab={<Transactions/>}

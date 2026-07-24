@@ -5,7 +5,7 @@ import React, { useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface HomeProps{
-  session:string,
+  username:string,
   version:string,
   dashboardTab: React.ReactNode;
   transactionsTab: React.ReactNode;
@@ -13,10 +13,9 @@ interface HomeProps{
   categoriesTab: React.ReactNode; // Correctly mapped
   reportTab: React.ReactNode;
   goalsTab: React.ReactNode;
-  settingsTab: React.ReactNode;
 }
 export default function HomeClient({
-  session,
+  username,
   version,
   dashboardTab,
   transactionsTab,
@@ -24,7 +23,6 @@ export default function HomeClient({
   categoriesTab,
   reportTab,
   goalsTab,
-  settingsTab
 } : HomeProps) {
   const router = useRouter();
   const searchParams = useSearchParams(); // Requires <Suspense> above it
@@ -51,7 +49,6 @@ export default function HomeClient({
       case "categories": return categoriesTab;
       case "report": return reportTab;
       case "goals": return goalsTab;
-      case "settings": return settingsTab;
       default:return dashboardTab;
     }
   }
@@ -61,7 +58,7 @@ export default function HomeClient({
         {/* Side Navigation */}
         <div className="w-full md:w-auto shrink-0">
           <Sidenav
-            session={session}
+            username={username}
             version={version}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -69,12 +66,11 @@ export default function HomeClient({
         </div>
 
         {/* Content */}
-        <div className="w-full h-full overflow-hidden no-scrollbar flex flex-col transition-all duration-300 ease-in-out">
-          <div className=""></div>
-          <main className="">
-            {renderContent()}
-          </main>
-        </div>
+        <div className="w-full h-full flex flex-col pt-15 md:pl-55 transition-all duration-300 ease-in-out">
+            <main className="w-full flex-1 overflow-y-auto no-scrollbar p-2 md:px-3">
+              {renderContent()}
+            </main>
+          </div>
       </div>
     </>
   )
