@@ -1,5 +1,6 @@
 "use client"
 
+import BudgetsModal from "@/components/app/budgets/budgetsModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -25,6 +26,13 @@ export default function BudgetsClient(){
                 </button>
               </div>
             </div>
+
+            {isOpen && (
+                <BudgetsModal
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                />
+            )}
         </>
     );
 }

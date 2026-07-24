@@ -1,5 +1,6 @@
 "use client";
 
+import GoalsModal from "@/components/app/goals/goalsModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -25,6 +26,13 @@ export default function GoalsClient() {
           </button>
         </div>
       </div>
+
+      {isOpen && (
+                <GoalsModal
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                />
+            )}
     </>
   );
 }

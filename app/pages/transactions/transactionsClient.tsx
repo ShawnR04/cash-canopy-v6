@@ -1,5 +1,6 @@
 "use client"
 
+import TransactionsModal from "@/components/app/transactions/transactionsModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -25,6 +26,13 @@ export default function TransactionsClient(){
                 </button>
               </div>
             </div>
+
+            {isOpen && (
+                <TransactionsModal
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                />
+            )}
         </>
     );
 }
