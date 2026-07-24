@@ -1275,3 +1275,313 @@ export async function createTransaction(data: CreateTransactionInput) {
   }
 }
 ```
+
+## DASHBOARD PAGE
+```tsx
+import React from "react";
+import {
+  TransactionCard,
+  BudgetCard,
+  GoalCard,
+  CategoryCard,
+} from "@/components/app";
+import { getDashboardData } from "@/app/actions/dashboard";
+
+export default async function DashboardPage() {
+  const { categories, budgets, goals, transactions } = await getDashboardData();
+
+  // Map categories by ID for O(1) lookup when attaching to transactions/budgets
+  const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
+
+  return (
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-bold text-zinc-900">Financial Overview</h1>
+        <p className="text-sm text-zinc-500">
+          Track your recent activity, active budgets, and savings progress.
+        </p>
+      </div>
+
+      {/* --- RECENT TRANSACTIONS --- */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          Recent Transactions
+        </h2>
+        {transactions.length === 0 ? (
+          <div className="p-8 text-center bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl">
+            <p className="text-sm text-zinc-500">No transactions recorded yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {transactions.map((tx: any) => (
+              <TransactionCard
+                key={tx.id}
+                transaction={tx}
+                category={categoryMap.get(tx.categoryId)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* --- BUDGETS & GOALS GRID --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* BUDGETS */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+            Active Budgets
+          </h2>
+          {budgets.length === 0 ? (
+            <div className="p-8 text-center bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl">
+              <p className="text-sm text-zinc-500">No active budgets set up.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {budgets.map((b: any) => (
+                <BudgetCard
+                  key={b.id}
+                  budget={b}
+                  spent={0} // Wire up calculated transaction totals here
+                  category={categoryMap.get(b.categoryId)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* GOALS */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+            Savings Goals
+          </h2>
+          {goals.length === 0 ? (
+            <div className="p-8 text-center bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl">
+              <p className="text-sm text-zinc-500">No savings goals created.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {goals.map((g: any) => (
+                <GoalCard key={g.id} goal={g} />
+              ))}
+            </div>
+          )}
+        </section>
+
+      </div>
+
+      {/* --- CATEGORIES PALETTE --- */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          Categories
+        </h2>
+        {categories.length === 0 ? (
+          <div className="p-8 text-center bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl">
+            <p className="text-sm text-zinc-500">No categories created yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {categories.map((c: any) => (
+              <CategoryCard key={c.id} category={c} />
+            ))}
+          </div>
+        )}
+      </section>
+
+    </div>
+  );
+}
+```
+
+## DASHBOARD CARDS
+```tsx
+"use client";
+
+import React from "react";
+import * as LucideIcons from "lucide-react";
+
+// --- Dynamic Icon Helper ---
+function DynamicIcon({ name, fallback = "Wallet", className = "w-5 h-5" }: { name?: string; fallback?: string; className?: string }) {
+  const iconName = name || fallback;
+  const formattedName = iconName
+    .trim()
+    .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+  const                    IconComponent = (LucideIcons as Record<string, any>)[formattedName] || LucideIcons.Wallet;
+  return <IconComponent className={className} />;
+}
+
+// --- 1. TRANSACTION CARD ---
+export function TransactionCard({ transaction, category }: { transaction: any; category?: any }) {
+  const isIncome = transaction.type === "Income";
+  const formattedDate = new Date(transaction.date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  return (
+    <div className="flex items-center justify-between p-3.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 transition-all shadow-sm">
+      <div className="flex items-center gap-3">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm"
+          style={{
+            backgroundColor: category?.color || (isIncome ? "#10b981" : "#18181b"),
+          }}
+        >
+          <DynamicIcon name={category?.icon || (isIncome ? "TrendingUp" : "Receipt")} className="w-5 h-5 drop-shadow-sm" />
+        </div>
+        <div>
+          <p className="font-semibold text-zinc-900 text-sm">{transaction.description}</p>
+          <p className="text-xs text-zinc-400 font-medium">
+            {category?.name || "Uncategorized"} • {formattedDate}
+          </p>
+        </div>
+      </div>
+      <span className={`font-bold text-sm ${isIncome ? "text-emerald-600" : "text-zinc-900"}`}>
+        {isIncome ? "+" : "-"}${Number(transaction.amount).toFixed(2)}
+      </span>
+    </div>
+  );
+}
+
+// --- 2. BUDGET CARD ---
+export function BudgetCard({ budget, spent = 0, category }: { budget: any; spent?: number; category?: any }) {
+  const limit = Number(budget.amount) || 1;
+  const percentage = Math.min(Math.round((spent / limit) * 100), 100);
+  const isOver = spent > limit;
+
+  return (
+    <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm"
+            style={{ backgroundColor: category?.color || "#18181b" }}
+          >
+            <DynamicIcon name={category?.icon || "PieChart"} className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-zinc-900 text-sm">{budget.name}</h4>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              {budget.period}
+            </span>
+          </div>
+        </div>
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+          isOver ? "bg-red-50 text-red-600" : "bg-zinc-100 text-zinc-600"
+        }`}>
+          {percentage}% Used
+        </span>
+      </div>
+
+      <div>
+        <div className="flex justify-between text-xs mb-1.5 font-medium">
+          <span className="text-zinc-500">${spent.toFixed(2)} spent</span>
+          <span className="text-zinc-900 font-bold">${limit.toFixed(2)} limit</span>
+        </div>
+        <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              isOver ? "bg-red-500" : percentage > 85 ? "bg-amber-500" : "bg-zinc-900"
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- 3. GOAL CARD ---
+export function GoalCard({ goal }: { goal: any }) {
+  const current = Number(goal.currentAmount || 0);
+  const target = Number(goal.targetAmount || 1);
+  const percentage = Math.min(Math.round((current / target) * 100), 100);
+
+  return (
+    <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center font-bold">
+            <LucideIcons.Target className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-zinc-900 text-sm">{goal.name}</h4>
+            {goal.targetDate && (
+              <span className="text-[10px] text-zinc-400 font-medium">
+                Target: {new Date(goal.targetDate).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        </div>
+        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+          {percentage}%
+        </span>
+      </div>
+
+      <div>
+        <div className="flex justify-between text-xs mb-1.5 font-medium">
+          <span className="text-zinc-500">${current.toFixed(2)} saved</span>
+          <span className="text-zinc-900 font-bold">${target.toFixed(2)} target</span>
+        </div>
+        <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- 4. CATEGORY PILL / CARD ---
+export function CategoryCard({ category }: { category: any }) {
+  return (
+    <div className="flex items-center gap-3 p-3 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 transition-all shadow-sm">
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center text-white shadow-sm"
+        style={{ backgroundColor: category.color || "#3b82f6" }}
+      >
+        <DynamicIcon name={category.icon} className="w-4 h-4 drop-shadow-sm" />
+      </div>
+      <span className="font-semibold text-zinc-800 text-sm">{category.name}</span>
+    </div>
+  );
+}
+```
+
+## DASHBOARD SERVER ACTIONS
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { categoriesTable, budgetsTable, goalsTable, transactionsTable } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser"; // Adjust import path
+import { eq, desc } from "drizzle-orm";
+
+export async function getDashboardData() {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    const [categories, budgets, goals, transactions] = await Promise.all([
+      db.select().from(categoriesTable).where(eq(categoriesTable.userId, userId)),
+      db.select().from(budgetsTable).where(eq(budgetsTable.userId, userId)),
+      db.select().from(goalsTable).where(eq(goalsTable.userId, userId)),
+      db
+        .select()
+        .from(transactionsTable)
+        .where(eq(transactionsTable.userId, userId))
+        .orderBy(desc(transactionsTable.date))
+        .limit(10), // Latest 10 transactions
+    ]);
+
+    return { categories, budgets, goals, transactions };
+  } catch (error) {
+    console.error("Failed to fetch dashboard data:", error);
+    return { categories: [], budgets: [], goals: [], transactions: [] };
+  }
+}
+```
