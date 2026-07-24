@@ -233,3 +233,8 @@ export const authClient = createAuthClient({
 ```bash
 npm i next-themes
 ```
+
+#### Charts
+```bash
+npm install recharts
+```

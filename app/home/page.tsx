@@ -11,6 +11,7 @@ export default async function Home(){
             <br/><a href="pages/budgets">budgets</a>
             <br/><a href="pages/transactions">transactions</a>
             <br/><a href="pages/dashboard">dashboard</a>
+            <br/><a href="pages/report">report</a>
         </div>
     );
 }

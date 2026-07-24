@@ -1276,7 +1276,7 @@ export async function createTransaction(data: CreateTransactionInput) {
 }
 ```
 
-## DASHBOARD PAGE
+## CARDS PAGE
 ```tsx
 import React from "react";
 import {
@@ -1395,7 +1395,7 @@ export default async function DashboardPage() {
 }
 ```
 
-## DASHBOARD CARDS
+## CARDS
 ```tsx
 "use client";
 
@@ -1553,7 +1553,7 @@ export function CategoryCard({ category }: { category: any }) {
 }
 ```
 
-## DASHBOARD SERVER ACTIONS
+## CARDS SERVER ACTIONS
 ```tsx
 "use server";
 
@@ -1582,6 +1582,704 @@ export async function getDashboardData() {
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
     return { categories: [], budgets: [], goals: [], transactions: [] };
+  }
+}
+```
+
+## DASHBOARD PAGE
+```tsx
+import React from "react";
+import * as LucideIcons from "lucide-react";
+import { getDashboardMetrics } from "@/app/actions/dashboard";
+import DashboardCharts from "./dashboardClient";
+
+export default async function DashboardPage() {
+  const data = await getDashboardMetrics();
+
+  if (!data) {
+    return (
+      <div className="p-8 text-center text-zinc-400 bg-[#06090e] min-h-screen">
+        Failed to load dashboard metrics.
+      </div>
+    );
+  }
+
+  const { metrics, categoryBreakdown, timelineData, recentTransactions, categories } = data;
+  const categoryMap = new Map(categories.map((c) => [c.id, c]));
+
+  return (
+    <div className="min-h-screen bg-[#06090e] text-zinc-100 p-6 space-y-6">
+      
+      {/* --- TOP METRICS CARDS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Balance */}
+        <div className="p-4 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-zinc-400">Total Balance</p>
+            <h3 className="text-2xl font-bold text-[#00a3ff] mt-1">
+              ${metrics.totalBalance.toFixed(2)}
+            </h3>
+            <p className="text-[11px] text-cyan-400/80 flex items-center gap-1 mt-1">
+              <span>↑</span> Active Net Flow
+            </p>
+          </div>
+          <div className="p-3 bg-cyan-950/40 rounded-xl text-[#00a3ff]">
+            <LucideIcons.Wallet className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Monthly Income */}
+        <div className="p-4 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-zinc-400">Total Income</p>
+            <h3 className="text-2xl font-bold text-emerald-400 mt-1">
+              ${metrics.totalIncome.toFixed(2)}
+            </h3>
+            <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-1">
+              <LucideIcons.ArrowUpRight className="w-3 h-3 text-emerald-400" /> All time
+            </p>
+          </div>
+          <div className="p-3 bg-emerald-950/30 rounded-xl text-emerald-400">
+            <LucideIcons.ArrowUpRight className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Monthly Expenses */}
+        <div className="p-4 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-zinc-400">Total Expenses</p>
+            <h3 className="text-2xl font-bold text-rose-500 mt-1">
+              ${metrics.totalExpenses.toFixed(2)}
+            </h3>
+            <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-1">
+              <LucideIcons.ArrowDownRight className="w-3 h-3 text-rose-500" /> All time
+            </p>
+          </div>
+          <div className="p-3 bg-rose-950/30 rounded-xl text-rose-500">
+            <LucideIcons.ArrowDownRight className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Savings Rate */}
+        <div className="p-4 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-zinc-400">Savings Rate</p>
+            <h3 className="text-2xl font-bold text-zinc-100 mt-1">
+              {metrics.savingsRate}%
+            </h3>
+            <p className="text-[11px] text-zinc-500 mt-1">% Of Total Income</p>
+          </div>
+          <div className="p-3 bg-indigo-950/30 rounded-xl text-indigo-400">
+            <LucideIcons.PiggyBank className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* --- RECHARTS SECTION --- */}
+      <DashboardCharts
+        categoryBreakdown={categoryBreakdown}
+        totalExpenses={metrics.totalExpenses}
+        totalIncome={metrics.totalIncome}
+      />
+
+      {/* --- LIVE TRANSACTIONS TABLE --- */}
+      <div className="bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl overflow-hidden">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-[#0e1626] text-cyan-400 font-bold uppercase tracking-wider border-b border-zinc-800/80">
+            <tr>
+              <th className="p-4">Date</th>
+              <th className="p-4">Description</th>
+              <th className="p-4">Category</th>
+              <th className="p-4">Type</th>
+              <th className="p-4">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800/50 text-zinc-200">
+            {recentTransactions.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-6 text-center text-zinc-500">
+                  No transactions found in database.
+                </td>
+              </tr>
+            ) : (
+              recentTransactions.map((tx) => {
+                const cat = tx.categoryId ? categoryMap.get(tx.categoryId) : null;
+                const isIncome = tx.type === "Income";
+
+                return (
+                  <tr key={tx.id} className="hover:bg-[#0e1626]/40 transition-colors">
+                    <td className="p-4 font-medium">
+                      {new Date(tx.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="p-4 font-semibold">{tx.description}</td>
+                    <td className="p-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-950/40 text-teal-400 border border-teal-800/40 font-medium">
+                        {cat?.name || "Uncategorized"}
+                      </span>
+                    </td>
+                    <td className={`p-4 font-bold ${isIncome ? "text-emerald-400" : "text-rose-500"}`}>
+                      {tx.type}
+                    </td>
+                    <td className={`p-4 font-bold ${isIncome ? "text-emerald-400" : "text-rose-500"}`}>
+                      {isIncome ? "+" : "-"}${Number(tx.amount).toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  );
+}
+```
+
+## DASHBOARD CLIENT
+```tsx
+"use client";
+
+import React from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+interface DashboardChartsProps {
+  categoryBreakdown: any[];
+  totalExpenses: number;
+  totalIncome: number;
+}
+
+export default function DashboardCharts({
+  categoryBreakdown,
+  totalExpenses,
+  totalIncome,
+}: DashboardChartsProps) {
+  const overviewData = [
+    { name: "Income", amount: totalIncome, color: "#10b981" },
+    { name: "Expenses", amount: totalExpenses, color: "#ef4444" },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Spending By Category Donut */}
+      <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col justify-between">
+        <h3 className="text-sm font-semibold text-[#00a3ff]">Spending by Category</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-4 my-4">
+          <div className="h-48 relative flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categoryBreakdown.length > 0 ? categoryBreakdown : [{ name: "None", amount: 1, color: "#27272a" }]}
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="amount"
+                >
+                  {categoryBreakdown.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute text-center">
+              <span className="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase block">
+                TOTAL EXPENSES
+              </span>
+              <span className="text-lg font-bold text-zinc-100">
+                ${totalExpenses.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {/* Dynamic Legend Pills */}
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+            {categoryBreakdown.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-center justify-between p-2 bg-[#0e1626] border border-zinc-800/60 rounded-xl"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                  <span className="text-xs font-medium text-zinc-200">{cat.name}</span>
+                  <span className="text-[10px] text-zinc-500">({cat.percentage})</span>
+                </div>
+                <span className="text-xs font-bold text-zinc-100">
+                  ${cat.amount.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Total Overview Bar Chart */}
+      <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-100">Total Overview</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Net Cash Flow:{" "}
+              <span className="text-emerald-400 font-bold bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                + ${(totalIncome - totalExpenses).toFixed(2)}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="h-52 mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={overviewData} barSize={60}>
+              <XAxis dataKey="name" stroke="#52525b" fontSize={11} tickLine={false} />
+              <YAxis stroke="#52525b" fontSize={11} tickLine={false} />
+              <Tooltip
+                cursor={{ fill: "transparent" }}
+                contentStyle={{ backgroundColor: "#0e1626", borderColor: "#27272a", borderRadius: "8px" }}
+              />
+              <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
+                {overviewData.map((entry, index) => (
+                  <Cell key={`bar-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## DASHBOARD SERVER ACTION
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { transactionsTable, categoriesTable, budgetsTable, goalsTable } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser";
+import { eq, sql, desc, gte } from "drizzle-orm";
+
+export async function getDashboardMetrics() {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    // 1. Fetch raw data in parallel
+    const [transactions, categories, budgets, goals] = await Promise.all([
+      db
+        .select()
+        .from(transactionsTable)
+        .where(eq(transactionsTable.userId, userId))
+        .orderBy(desc(transactionsTable.date)),
+      db.select().from(categoriesTable).where(eq(categoriesTable.userId, userId)),
+      db.select().from(budgetsTable).where(eq(budgetsTable.userId, userId)),
+      db.select().from(goalsTable).where(eq(goalsTable.userId, userId)),
+    ]);
+
+    // 2. Map Categories for fast lookup
+    const categoryMap = new Map(categories.map((c) => [c.id, c]));
+
+    // 3. Compute High-Level Financial Metrics
+    let totalIncome = 0;
+    let totalExpenses = 0;
+    const categoryTotals: Record<number, number> = {};
+
+    transactions.forEach((tx) => {
+      const amount = Number(tx.amount);
+      if (tx.type === "Income") {
+        totalIncome += amount;
+      } else if (tx.type === "Expense") {
+        totalExpenses += amount;
+        if (tx.categoryId) {
+          categoryTotals[tx.categoryId] = (categoryTotals[tx.categoryId] || 0) + amount;
+        }
+      }
+    });
+
+    const netBalance = totalIncome - totalExpenses;
+    const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
+
+    // 4. Build Category Spending Breakdown with Percentages
+    const categoryBreakdown = Object.entries(categoryTotals).map(([catId, amount]) => {
+      const category = categoryMap.get(Number(catId));
+      const percentage = totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) : "0.0";
+      return {
+        id: Number(catId),
+        name: category?.name || "Uncategorized",
+        icon: category?.icon || "Folder",
+        color: category?.color || "#3b82f6",
+        amount,
+        percentage: `${percentage}%`,
+      };
+    }).sort((a, b) => b.amount - a.amount);
+
+    // 5. Build Monthly Timeline Data (12 Months) for Line/Area Charts
+    const monthlyMap: Record<string, { month: string; income: number; expense: number }> = {};
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    months.forEach((m) => {
+      monthlyMap[m] = { month: m, income: 0, expense: 0 };
+    });
+
+    transactions.forEach((tx) => {
+      const d = new Date(tx.date);
+      const monthName = months[d.getMonth()];
+      const amount = Number(tx.amount);
+
+      if (monthlyMap[monthName]) {
+        if (tx.type === "Income") monthlyMap[monthName].income += amount;
+        if (tx.type === "Expense") monthlyMap[monthName].expense += amount;
+      }
+    });
+
+    const timelineData = Object.values(monthlyMap);
+
+    return {
+      metrics: {
+        totalBalance: netBalance,
+        totalIncome,
+        totalExpenses,
+        savingsRate,
+      },
+      categoryBreakdown,
+      timelineData,
+      recentTransactions: transactions.slice(0, 5), // Top 5 recent
+      categories,
+      budgets,
+      goals,
+    };
+  } catch (error) {
+    console.error("Error computing dashboard metrics:", error);
+    return null;
+  }
+}
+```
+
+## REPORT PAGE
+```tsx
+import React from "react";
+import * as LucideIcons from "lucide-react";
+import { getReportsData } from "@/app/actions/report";
+import ReportsCharts from "./reportClient";
+
+
+export default async function ReportsPage() {
+  const data = await getReportsData();
+
+  if (!data) {
+    return (
+      <div className="p-8 text-center text-zinc-400 bg-[#06090e] min-h-screen">
+        Failed to load report data.
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#06090e] text-zinc-100 p-6 space-y-6">
+      
+      {/* Top Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-zinc-100">Financial Reports</h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Annual spending, income trends, and category distribution.
+          </p>
+        </div>
+
+        <button className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0e1626] border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:bg-cyan-950/30 transition-all">
+          <LucideIcons.UserCheck className="w-3.5 h-3.5" />
+          <span>Switch account</span>
+        </button>
+      </div>
+
+      {/* Dynamic Report Charts */}
+      <ReportsCharts
+        timelineData={data.timelineData}
+        topExpenses={data.topExpenses}
+        categoryBreakdown={data.categoryBreakdown}
+      />
+
+    </div>
+  );
+}
+```
+
+## REPORT CLIENT
+```tsx
+"use client";
+
+import React from "react";
+import * as LucideIcons from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+interface ReportsChartsProps {
+  timelineData: any[];
+  topExpenses: any[];
+  categoryBreakdown: any[];
+}
+
+function DynamicIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return <LucideIcons.ShoppingBag className={className} />;
+
+  const formattedName = name
+    .trim()
+    .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+  const IconComponent = (LucideIcons as Record<string, any>)[formattedName];
+  if (!IconComponent) return <LucideIcons.ShoppingBag className={className} />;
+
+  return <IconComponent className={className} />;
+}
+
+export default function ReportsCharts({
+  timelineData,
+  topExpenses,
+  categoryBreakdown,
+}: ReportsChartsProps) {
+  return (
+    <div className="space-y-6">
+      
+      {/* --- ANNUAL TIMELINE CURVE AREA CHART --- */}
+      <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl">
+        <div className="h-64 mt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={timelineData}>
+              <XAxis dataKey="month" stroke="#52525b" fontSize={11} tickLine={false} />
+              <YAxis
+                stroke="#52525b"
+                fontSize={11}
+                tickLine={false}
+                tickFormatter={(val) => `$${val}`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#0e1626",
+                  borderColor: "#27272a",
+                  borderRadius: "8px",
+                }}
+              />
+
+              {/* Income Line */}
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#10b981"
+                strokeWidth={2}
+                fill="url(#incomeGradient)"
+              />
+
+              {/* Expense Line */}
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#ef4444"
+                strokeWidth={2}
+                fill="url(#expenseGradient)"
+              />
+
+              <defs>
+                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* --- TOP EXPENSES & CATEGORY BREAKDOWN GRID --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Top Expenses */}
+        <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col gap-4">
+          <h3 className="text-sm font-semibold text-[#00a3ff]">Top Expenses</h3>
+          <div className="flex flex-col gap-3">
+            {topExpenses.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-4">No recorded expenses.</p>
+            ) : (
+              topExpenses.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 bg-[#0e1626] border border-zinc-800/60 rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <DynamicIcon name={item.icon} className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-semibold text-zinc-200">
+                      {item.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-rose-500">
+                    ${item.amount.toFixed(2)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Category Breakdown List */}
+        <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col gap-4">
+          <h3 className="text-sm font-semibold text-[#00a3ff]">Category Breakdown</h3>
+          <div className="flex flex-col gap-3">
+            {categoryBreakdown.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-4">No category data.</p>
+            ) : (
+              categoryBreakdown.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex items-center justify-between p-3 bg-[#0e1626] border border-zinc-800/60 rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                      style={{ backgroundColor: cat.color }}
+                    >
+                      <DynamicIcon name={cat.icon} className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-semibold text-zinc-200">
+                      {cat.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-400">
+                    {cat.percentage} (${cat.amount.toFixed(2)})
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+```
+
+## REPORT SERVER ACTION
+```tsx
+"use server";
+
+import { db } from "@/db";
+import { transactionsTable, categoriesTable } from "@/db/schema";
+import { getAuthenticatedUser } from "./getAuthenticatedUser";
+import { eq, desc } from "drizzle-orm";
+
+export async function getReportsData() {
+  try {
+    const userId = await getAuthenticatedUser();
+
+    // Fetch transactions and categories in parallel
+    const [transactions, categories] = await Promise.all([
+      db
+        .select()
+        .from(transactionsTable)
+        .where(eq(transactionsTable.userId, userId))
+        .orderBy(desc(transactionsTable.date)),
+      db.select().from(categoriesTable).where(eq(categoriesTable.userId, userId)),
+    ]);
+
+    const categoryMap = new Map(categories.map((c) => [c.id, c]));
+
+    // --- 1. Compute 12-Month Annual Timeline Data ---
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyMap: Record<string, { month: string; income: number; expense: number }> = {};
+
+    months.forEach((m) => {
+      monthlyMap[m] = { month: m, income: 0, expense: 0 };
+    });
+
+    let totalExpenses = 0;
+    const categoryTotals: Record<number, number> = {};
+
+    transactions.forEach((tx) => {
+      const d = new Date(tx.date);
+      const monthName = months[d.getMonth()];
+      const amount = Number(tx.amount);
+
+      if (tx.type === "Income") {
+        if (monthlyMap[monthName]) monthlyMap[monthName].income += amount;
+      } else if (tx.type === "Expense") {
+        if (monthlyMap[monthName]) monthlyMap[monthName].expense += amount;
+        totalExpenses += amount;
+
+        if (tx.categoryId) {
+          categoryTotals[tx.categoryId] = (categoryTotals[tx.categoryId] || 0) + amount;
+        }
+      }
+    });
+
+    const timelineData = Object.values(monthlyMap);
+
+    // --- 2. Compute Top Expenses ---
+    const topExpenses = transactions
+      .filter((tx) => tx.type === "Expense")
+      .slice(0, 5)
+      .map((tx) => {
+        const cat = tx.categoryId ? categoryMap.get(tx.categoryId) : null;
+        return {
+          id: tx.id,
+          name: tx.description,
+          amount: Number(tx.amount),
+          color: cat?.color || "#3b82f6",
+          icon: cat?.icon || "ShoppingBag",
+        };
+      });
+
+    // --- 3. Compute Category Breakdown ---
+    const categoryBreakdown = Object.entries(categoryTotals)
+      .map(([catId, amount]) => {
+        const category = categoryMap.get(Number(catId));
+        const percentage = totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) : "0.0";
+        return {
+          id: Number(catId),
+          name: category?.name || "Uncategorized",
+          icon: category?.icon || "Folder",
+          color: category?.color || "#10b981",
+          amount,
+          percentage: `${percentage}%`,
+        };
+      })
+      .sort((a, b) => b.amount - a.amount);
+
+    return {
+      timelineData,
+      topExpenses,
+      categoryBreakdown,
+    };
+  } catch (error) {
+    console.error("Failed to fetch reports data:", error);
+    return null;
   }
 }
 ```
