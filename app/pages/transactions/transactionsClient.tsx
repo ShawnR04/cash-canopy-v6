@@ -2,6 +2,6 @@
 
 export default function TransactionsClient(){
     return(
-        <></>
+        <>Transactions Client</>
     );
 }

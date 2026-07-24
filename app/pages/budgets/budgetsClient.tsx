@@ -2,6 +2,6 @@
 
 export default function budgetsClient(){
     return(
-        <></>
+        <>BudgetsClient</>
     );
 }

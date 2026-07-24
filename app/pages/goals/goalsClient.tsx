@@ -2,6 +2,6 @@
 
 export default function GoalsClient() {
   return (
-    <></>
+    <>Goals Client</>
   );
 }
