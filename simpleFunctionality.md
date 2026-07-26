@@ -2283,3 +2283,35 @@ export async function getReportsData() {
   }
 }
 ```
+
+## Input Div
+```tsx
+<div className="group flex flex-col gap-2">
+                        <div className="flex justify-between items-center gap-2">
+                          <Label
+                            htmlFor=""
+                            className="custom-modal-label"
+                          ></Label>
+                          <Label
+                            className={`isfilled-badge ${
+                              fieldStatus
+                              ? "badge-success"
+                              : "badge-destructive"
+                            }`}
+                          >
+                            {fieldStatus ? "✓ Done" : "Required"}
+                          </Label>
+                        </div>
+                        <Input
+                        id=""
+                        name=""
+                        type="text"
+                        value={formData}
+                        onChange={handleChange}
+                        placeholder=""
+                        className={`h-11 ${
+                          fieldStatus ? "focus-visible:ring-success border-success/30" : ""
+                        }`}
+                      />
+                    </div>
+```

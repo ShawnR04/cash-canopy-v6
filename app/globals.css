@@ -245,7 +245,7 @@
 /*? Modal Form */
 .modal-form{
   width:100%;
-  max-width:445px;
+  max-width:455px;
   background-color: var(--card);
   padding:20px;
   display: flex;
@@ -311,7 +311,7 @@
 
 /*? Custon Label*/
 .custom-modal-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   line-height: 1.25rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -347,6 +347,27 @@
   transition-duration: 300ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.badge-success {
+  /* Light mode */
+  background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
+  color: var(--color-success);
+}
+.badge-destructive {
+  /* Light mode */
+  background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  color: var(--color-destructive);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .badge-success {
+    background-color: color-mix(in srgb, var(--color-success) 20%, transparent);
+  }
+}
+
+
+.isfilled-destructive {}
 
 /*? Modal Input */
 .modal-input {
