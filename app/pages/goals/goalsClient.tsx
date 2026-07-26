@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 
 export default function GoalsClient() {
-  const [isOpen, setIsOpen] = useState(!false);
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <div className="h-full overflow-y-auto no-scrollbar">

@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { createGoal } from '@/app/actions/goals';
+import { toast } from 'sonner';
 
 interface OpenModalProps{
   isOpen:boolean
@@ -64,7 +66,27 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-  }
+
+    try{
+      await createGoal({
+        name: formData.name,
+        targetAmount: formData.targetAmount,
+        currentAmount: formData.currentAmount || "0",
+        currency: formData.currency,
+        status: formData.status,
+        targetDate: formData.targetDate ? new Date(formData.targetDate) : new Date(),
+        userId: ""
+      });
+
+      toast.success("Goal created successfully!")
+      setIsOpen(false);
+    } catch(error){
+      console.error(error);
+      toast.error("Error creating goal. Make sure you are logged in!")
+    } finally{
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -112,6 +134,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                     <Input
                       id="name"
                       name="name"
+                      required
                       type="text"
                       value={formData.name}
                       onChange={handleChange}
@@ -145,6 +168,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                         <Input
                         id="targetAmount"
                         name="targetAmount"
+                        required
                         type="number"
                         value={formData.targetAmount}
                         onChange={handleChange}
@@ -177,6 +201,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                         <Input
                         id="currentAmount"
                         name="currentAmount"
+                        required
                         type="number"
                         value={formData.currentAmount}
                         onChange={handleChange}
@@ -211,6 +236,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                         <Select
                           id="currency"
                           name="currency"
+                          required
                           value={formData.currency}
                           onValueChange={(value) => {
                             setFormData((prev) => ({
@@ -255,6 +281,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                         <Select
                           id="currency"
                           name="currency"
+                          required
                           value={formData.status}
                           onValueChange={(value) => {
                             setFormData((prev) => ({
@@ -299,6 +326,7 @@ export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
                         <Input
                         id="targetDate"
                         name="targetDate"
+                        required  
                         type="date"
                         value={formData.targetDate}
                         onChange={handleChange}
