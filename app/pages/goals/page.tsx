@@ -1,9 +1,12 @@
+import GoalsCard from "@/components/app/goals/goalsCard";
 import GoalsClient from "./goalsClient";
 
 export default function Goals() {
   return (
     <>
-        <GoalsClient></GoalsClient>
+        <GoalsClient>
+          <GoalsCard/>
+        </GoalsClient>
     </>
   );
 }

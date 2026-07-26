@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { budgetsTable, InsertBudget } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 // Accept dates as strings from the client form
 type CreateBudgetInput = Omit<
@@ -27,6 +28,8 @@ export async function createBudget(data: CreateBudgetInput) {
       categoryId: data.categoryId ?? null,
     } as InsertBudget);
 
+    revalidatePath("/budgets");
+    
     return { success: true, error: null };
   } catch (error) {
     console.error("Failed to create budget:", error);

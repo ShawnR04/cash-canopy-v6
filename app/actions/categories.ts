@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { categoriesTable, InsertCategory } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 export async function createCategory(data: InsertCategory) {
   try {
@@ -16,6 +17,8 @@ export async function createCategory(data: InsertCategory) {
       userId: userId,
     });
 
+    revalidatePath("/categories");
+    
     return { success: true, error: null };
   } catch (error) {
     console.error("Failed to create category:", error);

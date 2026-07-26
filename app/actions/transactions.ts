@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { transactionsTable } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser"; // Adjust import path if needed
 import { InferInsertModel } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 export type InsertTransaction = InferInsertModel<typeof transactionsTable>;
 
@@ -28,6 +29,8 @@ export async function createTransaction(data: CreateTransactionInput) {
       goalId: data.goalId ?? null,
     } as InsertTransaction);
 
+    revalidatePath("/transactions");
+    
     return { success: true, error: null };
   } catch (error) {
     console.error("Failed to create transaction:", error);

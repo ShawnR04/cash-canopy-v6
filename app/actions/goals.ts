@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { goalsTable, insertGoal } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 export async function createGoal(data: insertGoal) {
   try {
@@ -21,6 +22,8 @@ export async function createGoal(data: insertGoal) {
       userId: userId, // Uses the real server-authenticated user ID
     });
 
+    revalidatePath("/goals");
+    
     return { success: true };
   } catch (error) {
     console.error("Failed to create goal:", error);
@@ -55,10 +58,7 @@ export async function getGoals() {
   try {
     const userId = await getAuthenticatedUser();
     return await db
-      .select({
-        id: goalsTable.id,
-        name: goalsTable.name,
-      })
+      .select()
       .from(goalsTable)
       .where(eq(goalsTable.userId, userId));
   } catch (error) {

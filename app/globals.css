@@ -225,7 +225,6 @@
 
 /*? Modal Background */
 .modal-background{
-  /* TODO: Add the z-index */
   /*z-index: 9999;*/
   padding-inline:20px ;
   width:100vw;
@@ -452,4 +451,41 @@
   /* Creates a 15% opacity version of your primary color */
   background-color: color-mix(in srgb, var(--primary) 15%, transparent); 
   cursor: pointer;
+}
+
+/*? Cards */
+.card {
+  /* Layout & Sizing */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 0.75rem; /* gap-3 */
+  padding: 0.5rem 0.75rem; /* px-3 py-2 */
+  border-radius: 0.375rem; /* rounded-md */
+  cursor: pointer;
+
+  /* Colors & Elevation */
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+
+  /* Smooth Interactions */
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Medium screens and up (md:p-4) */
+@media (min-width: 768px) {
+  .card {
+    padding: 1rem;
+  }
+}
+
+/* Hover effect (hover:border-primary/30) */
+.card:hover {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* Active click effect (active:scale-[0.98]) */
+.card:active {
+  transform: scale(0.98);
 }

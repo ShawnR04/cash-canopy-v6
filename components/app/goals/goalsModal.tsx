@@ -18,7 +18,7 @@ interface OpenModalProps{
   isOpen:boolean
   setIsOpen: (val: boolean) => void
 }
-
+//TODO: Make this work for updating goal as well
 export default function GoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
   //const [name, setName] = useState("");
   //const [targetAmount, setTargetAmount] = useState("");
