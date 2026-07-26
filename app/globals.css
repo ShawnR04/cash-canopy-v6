@@ -225,7 +225,7 @@
 
 /*? Modal Background */
 .modal-background{
-  /*z-index: 9999;*/
+  z-index: 999;
   padding-inline:20px ;
   width:100vw;
   height:100%;

@@ -77,7 +77,7 @@ export default function SideNav({
         
         {/* SideNav */}
         <aside className={`
-          bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block   ${
+          z-10 bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block   ${
           isOpen ? "translate-x-0" : "-translate-x-full"
           }
         `}>

@@ -2,6 +2,7 @@
 
 import { updateGoalStatus } from "@/app/actions/goals";
 import { useState, useTransition } from "react";
+import UpdateGoalsModal from "./updateGoalsModal";
 
 interface Goal {
     id: number;
@@ -17,6 +18,7 @@ export type GoalStatus = "active" | "achieved" | "paused"
 
 export default function GoalsCardItem({ goal }: { goal: Goal }){
     const [isPending, startTransition] = useTransition();
+    const [isOpen, setIsOpen] = useState(false);
 
     //Progress Metrics
     const targetAmount = parseFloat(goal.targetAmount) || 0;
@@ -41,7 +43,10 @@ export default function GoalsCardItem({ goal }: { goal: Goal }){
     };
 
     //Status Toggle
-    const handleStatusToggle = (() => {
+    const handleStatusToggle = ((e: React.MouseEvent<HTMLButtonElement>) => {
+        // Prevent the event from bubbling up to the card container
+        e.stopPropagation();
+
         if(isTargetReached) return;
 
         const previousStatus = status;
@@ -121,7 +126,11 @@ export default function GoalsCardItem({ goal }: { goal: Goal }){
       return daysLeftStyles[status] || daysLeftStyles.active;
     };
     return(
-        <div className="card">
+        <>
+        <div 
+            className="card"
+            onClick={() => setIsOpen(!isOpen)}
+        >
             <div className="flex gap-2">
                 <div className="w-1/2">
                     <h1 className="text-lg font-semibold tracking-tight capitalize">
@@ -168,5 +177,14 @@ export default function GoalsCardItem({ goal }: { goal: Goal }){
                 <p className="w-1/2 text-[14px] text-muted-foreground flex items-center justify-end">{formattedDate}</p>
             </div>
         </div>
+
+        {isOpen && (
+            <UpdateGoalsModal
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                goal={goal}
+            />
+        )}
+        </>
     );
 }
