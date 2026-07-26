@@ -1,5 +1,8 @@
 "use client"
 
+import { updateGoalStatus } from "@/app/actions/goals";
+import { useState, useTransition } from "react";
+
 interface Goal {
     id: number;
     name: string;
@@ -10,12 +13,64 @@ interface Goal {
     targetDate: Date;
 }
 
+export type GoalStatus = "active" | "achieved" | "paused"
+
 export default function GoalsCardItem({ goal }: { goal: Goal }){
+    const [isPending, startTransition] = useTransition();
 
     //Progress Metrics
     const targetAmount = parseFloat(goal.targetAmount) || 0;
     const currentAmount = parseFloat(goal.currentAmount) || 0;
     const progress = Math.min((currentAmount / targetAmount) * 100, 100);
+
+    //Auto detects if target amount has been reached
+    const isTargetReached = targetAmount > 0 && currentAmount >= targetAmount;
+
+    //Local status state
+    const initialStatus = isTargetReached
+    ? "achieved"
+    : ((goal.status?.toLowerCase() as GoalStatus) || "active");
+
+    const [status, setStatus] = useState<GoalStatus>(initialStatus);
+
+    // Color & Badge configuration for UI
+    const statusStyles: Record<GoalStatus, string> = {
+      active: "bg-blue-500/10 text-primary border-blue-200 hover:bg-blue-500/20",
+      achieved: "bg-emerald-500/10 text-success border-emerald-200 hover:bg-emerald-500/20",
+      paused: "bg-amber-500/10 text-warning border-amber-200 hover:bg-amber-500/20",
+    };
+
+    //Status Toggle
+    const handleStatusToggle = (() => {
+        if(isTargetReached) return;
+
+        const previousStatus = status;
+        const nextStatus: GoalStatus = status === "paused" ? "active" : "paused"
+
+        setStatus(nextStatus);
+
+        startTransition(async () => {
+            try{
+                await updateGoalStatus(goal.id,nextStatus);
+            }catch(error){
+                console.error("Failed to update status on server", error)
+                setStatus(previousStatus)
+            }
+        })
+    })
+
+    //Dynamin progress bar colors
+    const progressBarStyles: Record<GoalStatus, string> = {
+        active:"bg-primary",
+        achieved: "bg-success",
+        paused: "bg-warning"
+    }
+
+    const daysLeftStyles: Record<GoalStatus, string> = {
+        achieved: "text-success",
+        active: "text-primary",
+        paused: "text-warning"
+    }
 
     let dateObject: Date | null = null;
     let daysLeftDisplay = "N/A";
@@ -54,6 +109,17 @@ export default function GoalsCardItem({ goal }: { goal: Goal }){
 
     // Now TypeScript allows indexing with any string
     const sign = currencySymbols[goal.currency] || "$";
+
+    // Determine the days-left text color
+    const getDaysLeftColor = () => {
+      if (daysLeftDisplay === "Overdue" || daysLeftDisplay === "N/A") {
+        return "text-destructive";
+      }
+      if (daysLeftDisplay === "Today") {
+        return "text-success";
+      }
+      return daysLeftStyles[status] || daysLeftStyles.active;
+    };
     return(
         <div className="card">
             <div className="flex gap-2">
@@ -65,17 +131,29 @@ export default function GoalsCardItem({ goal }: { goal: Goal }){
                         Target: {sign}{targetAmount.toFixed(2)}
                     </p>
                 </div>
-                <div className="w-1/2 flex flex-col items-end justify-center">
-                    <h1 className={`text-sm font-medium ${
-                        daysLeftDisplay === "Overdue" || daysLeftDisplay === "N/A" ? "text-destructive" : daysLeftDisplay === "Today" ? "text-emerald-500" : "text-primary"
-                    }`}>
+                <div className="w-1/2 flex flex-col gap-2 items-end justify-center">
+                    <button
+                      onClick={handleStatusToggle}
+                      disabled={isPending}
+                      className={`px-2.5 py-0.5 text-xs font-medium rounded-full border transition-all capitalize ${
+                        statusStyles[status] || statusStyles.active
+                      } ${isPending ? "opacity-70 cursor-wait" : ""}`}
+                    >
+                      {status}
+                    </button>
+                    <h1 className={`text-sm font-medium ${getDaysLeftColor()}`}>
                         {daysLeftDisplay}
                     </h1>
                 </div>
             </div>
 
             <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="bg-primary h-full transition-all duration-300 ease-out rounded-full" style={{ width: `${progress}%` }} />
+                <div 
+                    className={`bg-primary h-full transition-all duration-300 ease-out rounded-full ${
+                        progressBarStyles[status] || progressBarStyles.active
+                    }`} 
+                    style={{ width: `${progress}%` }} 
+                />
             </div>
 
             <div className="flex gap-2">
