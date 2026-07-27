@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { getGoals } from "@/app/actions/goals";
 import GoalsCardItem from "./goalsCardItem";
 

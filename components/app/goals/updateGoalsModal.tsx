@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isFilled } from "@/lib/checkIsFilled";
 import { Asterisk, BadgeCheck, Check, Loader2, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
+import { updateGoal } from "@/app/actions/goals";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface OpenModalProps{
   isOpen:boolean
@@ -29,7 +32,9 @@ export interface Goal {
 }
 
 export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalProps){
+    const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const [isDeleting, setIsDeleting] = useState(false);
 
     const currentAmount = parseFloat(goal.currentAmount) || 0;
@@ -37,7 +42,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
     const [formData, setFormData] = useState({
         name: goal.name,
         targetAmount: goal.targetAmount,
-        addAmount: "",
+        addAmount: "0",
         currentAmount: goal.currentAmount,
         currency: goal.currency,
         status: goal.status,
@@ -70,11 +75,58 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
       targetDate: isFilled(formData.targetDate, "date")
     }
 
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      // Compute updated total amount
+      const baseCurrent = parseFloat(formData.currentAmount) || 0;
+      const addedVal = parseFloat(formData.addAmount) || 0;
+      const finalCurrentAmount = (baseCurrent + addedVal).toString();
+
+      // Ensure targetDate is safely stringified
+      const formattedTargetDate =
+        formData.targetDate instanceof Date
+          ? formData.targetDate.toISOString().split("T")[0]
+          : String(formData.targetDate || "");
+
+      const data = new FormData();
+      data.append("id", String(goal.id));
+      data.append("name", formData.name);
+      data.append("targetAmount", formData.targetAmount);
+      data.append("currentAmount", finalCurrentAmount);
+      data.append("currency", formData.currency);
+      data.append("status", formData.status);
+      data.append("targetDate", formattedTargetDate);
+
+      setIsSubmitting(true);
+
+      const result = await updateGoal(data);
+
+      if (result?.success) {
+        toast.success("Goal updated successfully!");
+        setFormData((prev) => ({
+          ...prev,
+          currentAmount: finalCurrentAmount,
+          addAmount: "",
+        }));
+        
+        setIsOpen(false);
+        startTransition(() => {
+          router.refresh();
+        });
+      } else {
+        toast.error(result?.error || "Something went wrong.");
+      }
+
+
+      setIsSubmitting(false);
+    };
+
     return(
         <>
             <div className="modal-background">
                 <div className="background-glow"/>
-                <form className="modal-form">
+                <form onSubmit={handleSubmit} className="modal-form">
                     <div className="flex items-center justify-between relative">
                         <div className="">
                             <h1 className="form-heading">
