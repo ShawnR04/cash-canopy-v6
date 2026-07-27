@@ -225,7 +225,7 @@
 
 /*? Modal Background */
 .modal-background{
-  z-index: 999;
+  z-index: 50;
   padding-inline:20px ;
   width:100vw;
   height:100%;
@@ -243,7 +243,9 @@
 
 /*? Modal Form */
 .modal-form{
+  z-index: 50;
   width:100%;
+  position: relative;
   max-width:455px;
   background-color: var(--card);
   padding:20px;

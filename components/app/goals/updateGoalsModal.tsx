@@ -1,4 +1,16 @@
-import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { isFilled } from "@/lib/checkIsFilled";
+import { Asterisk, BadgeCheck, Check, Loader2, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
 
 interface OpenModalProps{
   isOpen:boolean
@@ -12,13 +24,55 @@ export interface Goal {
     targetAmount: string;
     currentAmount: string;
     currency: string;
-    targetDate: Date;
+    status: "active" | "achieved" | "paused" | string;
+    targetDate: string | Date;
 }
 
 export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalProps){
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const currentAmount = parseFloat(goal.currentAmount) || 0;
+
+    const [formData, setFormData] = useState({
+        name: goal.name,
+        targetAmount: goal.targetAmount,
+        addAmount: "",
+        currentAmount: goal.currentAmount,
+        currency: goal.currency,
+        status: goal.status,
+        targetDate: goal.targetDate,
+    });
+
+    const formatDateForInput = (dateVal: Date | string | undefined | null): string => {
+      if (!dateVal) return "";
+      const dateObj = typeof dateVal === "string" ? new Date(dateVal) : dateVal;
+      return !isNaN(dateObj.getTime())
+        ? dateObj.toISOString().split("T")[0] // Produces 'YYYY-MM-DD'
+        : "";
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
+
+    const fieldStatus = {
+      name: isFilled(formData.name, "text"),
+      targetAmount: isFilled(formData.targetAmount, "number"),
+      addAmount: isFilled(formData.addAmount, "number"),
+      currentAmount: isFilled(formData.currentAmount, "number"),
+      currency: isFilled(formData.currency, "select"),
+      status: isFilled(formData.status, "select"),
+      targetDate: isFilled(formData.targetDate, "date")
+    }
+
     return(
         <>
-            <div className="modal-background z-2">
+            <div className="modal-background">
                 <div className="background-glow"/>
                 <form className="modal-form">
                     <div className="flex items-center justify-between relative">
@@ -38,6 +92,335 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                     </div>
 
                     {/* TODO: Continue witht the update logic */}
+                    <div className="flex flex-col gap-3 mt-5">
+                        <div className="group flex flex-col gap-2">
+                            <div className="flex justify-between items-center gap-2">
+                              <Label
+                                htmlFor="name"
+                                className="custom-modal-label"
+                              >
+                                Goal Name
+                              </Label>
+                              <Label
+                                className={`isfilled-badge ${
+                                  fieldStatus.name
+                                  ? "badge-success"
+                                  : "badge-destructive"
+                                }`}
+                              >
+                                {fieldStatus.name ? 
+                            (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                              </Label>
+                            </div>
+                            <Input
+                              id="name"
+                              name="name"
+                              required
+                              type="text"
+                              value={formData.name}
+                              onChange={handleChange}
+                              placeholder="e.g. TV"
+                              className={`h-11 ${
+                                fieldStatus.name ? "focus-visible:ring-success border-success/30" : ""
+                              }`}
+                            />
+                        </div>
+
+                        <div className="flex justify-around gap-2">
+                          {/* Target Amount */}
+                          <div className="group flex flex-col gap-2">
+                              <div className="flex justify-between items-center">
+                                <Label
+                                  htmlFor="targetAmount"
+                                  className="custom-modal-label"
+                                >
+                                  Target Amount
+                                </Label>
+                                <Label
+                                  className={`isfilled-badge ${
+                                    fieldStatus.targetAmount
+                                    ? "badge-success"
+                                    : "badge-destructive"
+                                  }`}
+                                >
+                                  {fieldStatus.targetAmount ? (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                                </Label>
+                              </div>
+                              <Input
+                              id="targetAmount"
+                              name="targetAmount"
+                              required
+                              type="number"
+                              value={formData.targetAmount}
+                              onChange={handleChange}
+                              placeholder=""
+                              className={`h-11 ${
+                                fieldStatus.targetAmount ? "focus-visible:ring-success border-success/30" : ""
+                              }`}
+                            />
+                          </div>
+
+                          {/* Current Amount */}
+                          <div className="group flex flex-col gap-2">
+                              <div className="flex justify-between items-center">
+                                <Label
+                                  htmlFor="currentAmount"
+                                  className="custom-modal-label"
+                                >
+                                  Change Amount
+                                </Label>
+                                <Label
+                                  className={`isfilled-badge ${
+                                    fieldStatus.currentAmount
+                                    ? "badge-success"
+                                    : "badge-destructive"
+                                  }`}
+                                >
+                                  {fieldStatus.currentAmount ? 
+                                (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                                </Label>
+                              </div>
+                              <Input
+                              id="currentAmount"
+                              name="currentAmount"
+                              required
+                              type="number"
+                              value={formData.currentAmount}
+                              onChange={handleChange}
+                              placeholder=""
+                              className={`h-11 ${
+                                fieldStatus.currentAmount ? "focus-visible:ring-success border-success/30" : ""
+                              }`}
+                            />
+                          </div>
+
+                            {/**TODO:  Make the add to account functionality */}
+                          {/* Add To Amount */}
+                          <div className="group flex flex-col gap-2">
+                              <div className="flex justify-between items-center">
+                                <Label
+                                  htmlFor="currentAmount"
+                                  className="custom-modal-label"
+                                >
+                                  Add to Amount
+                                </Label>
+                                <Label
+                                  className={`isfilled-badge ${
+                                    fieldStatus.addAmount
+                                    ? "badge-success"
+                                    : "badge-destructive"
+                                  }`}
+                                >
+                                  {fieldStatus.addAmount ? 
+                                  (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                                </Label>
+                              </div>
+                              <Input
+                              id="addAmount"
+                              name="addAmount"
+                              required
+                              type="number"
+                              value={formData.addAmount}
+                              onChange={handleChange}
+                              placeholder=""
+                              className={`h-11 ${
+                                fieldStatus.addAmount ? "focus-visible:ring-success border-success/30" : ""
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between gap-2">
+                          {/* Currency */}
+                          <div className="group flex flex-col gap-2">
+                              <div className="flex justify-between items-center gap-2">
+                                <Label
+                                  htmlFor=""
+                                  className="custom-modal-label"
+                                >
+                                  Currency
+                                </Label>
+                                <Label
+                                  className={`isfilled-badge ${
+                                    fieldStatus.currency
+                                    ? "badge-success"
+                                    : "badge-destructive"
+                                  }`}
+                                >
+                                  {fieldStatus ? 
+                                (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                                </Label>
+                              </div>
+                              <Select
+                                id="currency"
+                                name="currency"
+                                required
+                                value={formData.currency}
+                                onValueChange={(value) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    currency:value ?? ""
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger
+                                className="w-full"
+                                >
+                                  <SelectValue placeholder="Select Currency..."/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="USD">USD ($)</SelectItem>
+                                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                                  <SelectItem value="CAD">CAD ($)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                          </div>
+                            
+                          {/* Status */}
+                          <div className="group flex flex-col gap-2">
+                              <div className="flex justify-between items-center gap-2">
+                                <Label
+                                  htmlFor=""
+                                  className="custom-modal-label"
+                                >
+                                  Status
+                                </Label>
+                                <Label
+                                  className={`isfilled-badge ${
+                                    fieldStatus.status
+                                    ? "badge-success"
+                                    : "badge-destructive"
+                                  }`}
+                                >
+                                  {fieldStatus ? 
+                                (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                  )}
+                                </Label>
+                              </div>
+                              <Select
+                                id="currency"
+                                name="currency"
+                                required
+                                value={formData.status}
+                                onValueChange={(value) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    status:value as "active" | "achieved" | "paused"
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger
+                                className="w-full z-10000"
+                                >
+                                  <SelectValue placeholder="Select Status..."/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="active">Active</SelectItem>
+                                  {/*TODO:  This is for the update logic */}
+                                  <SelectItem value="achieved">Achieved</SelectItem>
+                                  <SelectItem value="paused">Paused</SelectItem>
+                                </SelectContent>
+                              </Select>
+                          </div>
+                        </div>
+
+                        <div className="group flex flex-col gap-2">
+                            <div className="flex justify-between items-center gap-2">
+                              <Label
+                                htmlFor="targetDate"
+                                className="custom-modal-label"
+                              >
+                                Target Date
+                              </Label>
+                              <Label
+                                className={`isfilled-badge ${
+                                  fieldStatus.targetDate
+                                  ? "badge-success"
+                                  : "badge-destructive"
+                                }`}
+                              >
+                                {fieldStatus.targetDate ? 
+                                    (
+                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
+                                  ) : (
+                                    <Asterisk className="w-4 h-4" />
+                                )}
+                              </Label>
+                            </div>
+                            <Input
+                            id="targetDate"
+                            name="targetDate"
+                            required  
+                            type="date"
+                            value={formatDateForInput(formData.targetDate)}
+                            onChange={handleChange}
+                            placeholder=""
+                            className={`h-11 ${
+                              fieldStatus.targetDate ? "focus-visible:ring-success border-success/30" : ""
+                            }`}
+                          />
+                        </div>
+                    </div>
+
+                    {/* Metadata & Delete */}
+                        <div className="flex items-center justify-between gap-3 px-0.5 mt-3">
+                            <p className="text-sm text-muted-foreground">
+                                Current Savings: <span className="font-bold text-primary">${currentAmount.toFixed(2)}</span>
+                            </p>
+                            <button
+                                type="button"
+                                disabled={isSubmitting || isDeleting}
+                                className="bg-destructive/10 rounded-md text-destructive border border-destructive/20 hover:bg-destructive/20 h-9 px-3 flex items-center justify-center transition-colors"
+                            >
+                                {isDeleting ? (
+                                    <Loader2 className="animate-spin h-4 w-4" />
+                                ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                )}
+                            </button>
+                        </div>
+
+                    <div className="flex gap-3 mt-5">
+                      <Button
+                        variant="outline"
+                        className="modal-button h-11"
+                        onClick={() => setIsOpen(!isOpen)}
+                      >
+                        Cancel
+                      </Button>
+
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="modal-button h-11"
+                      >
+                        {isSubmitting ? "Updating..." : "Update Goal"}
+                      </Button>
+                    </div>
                 </form>
             </div>
         </>

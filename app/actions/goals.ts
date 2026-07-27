@@ -34,7 +34,7 @@ export async function createGoal(data: insertGoal) {
   }
 }
 
-export async function updateGoal() {}
+export async function updateGoal(formData: FormData) {}
 
 export async function updateGoalStatus(goalId: number, status: GoalStatus){
   try{
