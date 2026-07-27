@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
-import { updateGoal } from "@/app/actions/goals";
+import { deleteGoal, updateGoal } from "@/app/actions/goals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -120,6 +120,24 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
 
 
       setIsSubmitting(false);
+    };
+
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault(); // Stop form triggers
+        
+        const formData = new FormData();
+        formData.append("id", String(goal.id));
+        setIsDeleting(true);
+
+        const result = await deleteGoal(formData);
+        if (result?.success) {
+            toast.success(`${goal.name} deleted successfully!`);
+            setIsOpen(false);
+            setIsDeleting(false);
+        } else {
+            toast.error(result?.error || "Something went wrong.");
+            setIsDeleting(false);
+        }
     };
 
     return(
@@ -445,6 +463,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                             </p>
                             <button
                                 type="button"
+                                onClick={handleDelete}
                                 disabled={isSubmitting || isDeleting}
                                 className="bg-destructive/10 rounded-md text-destructive border border-destructive/20 hover:bg-destructive/20 h-9 px-3 flex items-center justify-center transition-colors"
                             >

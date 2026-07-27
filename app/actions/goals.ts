@@ -112,6 +112,35 @@ export async function updateGoalStatus(goalId: number, status: GoalStatus){
   }
 }
 
+export async function deleteGoal(formData: FormData) {
+    try{
+        const userId = await getAuthenticatedUser();
+
+        const rawId = formData.get("id");
+        if(!rawId){
+            return { success: false, error: "Goal ID is missing." };
+        }
+        const id = parseInt(rawId as string, 10);
+
+        if(isNaN(id)){
+            return { success: false, error: "Invalid goal ID." };
+        }
+
+        await db
+            .delete(goalsTable)
+            .where(and(eq(goalsTable.id, id), eq(goalsTable.userId, userId)));
+
+        revalidatePath("/goals");
+        return { success: true };
+    }catch(error){
+        console.error("Failed to delete goal:", error);
+        return { 
+            success: false, 
+            error: "An error occurred while deleting the goal." 
+        };
+    }
+}
+
 export async function getGoals() {
   try {
     const userId = await getAuthenticatedUser();
