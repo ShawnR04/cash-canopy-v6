@@ -1,6 +1,6 @@
 "use client"
 
-import CategoriesModal from "@/components/app/categories/categoriesModal";
+import CreateCategoriesModal from "@/components/app/categories/createCategoriesModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -28,7 +28,7 @@ export default function CategoriesClient(){
             </div>
 
             {isOpen && (
-                <CategoriesModal
+                <CreateCategoriesModal
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
                 />
