@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { isFilled } from '@/lib/checkIsFilled';
 import { Button } from '@/components/ui/button';
+import { createCategory } from '@/app/actions/categories';
+import { toast } from 'sonner';
 
 interface OpenModalProps{
   isOpen:boolean
@@ -100,11 +102,32 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
     icon: isFilled(formData.icon, "text"),
     color: isFilled(formData.color, "text"),
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try{
+      await createCategory({
+        name: formData.name,
+        icon: formData.icon,
+        color: formData.color,
+        userId: "",
+      });
+
+      toast.success("Category created successfully")
+      setIsOpen(false);
+    }catch(error){
+      toast.error("Error creating category. Make sure you are logged in!")
+    }finally{
+      setIsSubmitting(false)
+    }
+  }
   return (
     <>
         <div className="modal-background z-2">
             <div className="background-glow"/>
-            <form action="" className="modal-form">
+            <form onSubmit={handleSubmit} className="modal-form">
                 <div className="flex items-center justify-between relative px-5">
                     <h1 className="form-heading">
                       Create Category
@@ -142,6 +165,7 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
                       id="name"
                       name="name"
                       type="text"
+                      required
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Groceries"
@@ -175,6 +199,7 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
                           id="icon"
                           name="icon"
                           type="text"
+                          required
                           value={formData.icon}
                           onChange={handleChange}
                           placeholder="Type to search icon (e.g. ShoppingCart)..."
@@ -312,7 +337,7 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
                     disabled={isSubmitting}
                     className="modal-button h-11"
                   >
-                    {isSubmitting ? "Saving..." : "Create Goal"}
+                    {isSubmitting ? "Saving..." : "Create Category"}
                   </Button>
                 </div>
             </form>
