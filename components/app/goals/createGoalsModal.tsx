@@ -18,7 +18,6 @@ interface OpenModalProps{
   isOpen:boolean
   setIsOpen: (val: boolean) => void
 }
-//TODO: Make this work for updating goal as well
 export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
   //const [name, setName] = useState("");
   //const [targetAmount, setTargetAmount] = useState("");
@@ -297,7 +296,6 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="active">Active</SelectItem>
-                            {/*TODO:  This is for the update logic */}
                             {/*<SelectItem value="achieved">Achieved</SelectItem>
                             <SelectItem value="paused">Paused</SelectItem>*/}
                           </SelectContent>

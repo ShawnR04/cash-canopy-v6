@@ -17,7 +17,7 @@ export default async function Home(){
         return redirect("/auth/login")
     }
 
-    const username = `${session.user.username}`
+    const username = session?.user?.username || session?.user?.name || "User";
     const version = "6.0.0"
     return(
         <>
