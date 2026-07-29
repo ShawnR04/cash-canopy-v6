@@ -5,7 +5,11 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-export default function CategoriesClient(){
+interface CategoriesClientProps {
+  children: React.ReactNode; // Add this prop to accept the Server Component
+}
+
+export default function CategoriesClient({ children }: CategoriesClientProps){
     const [isOpen, setIsOpen] = useState(false);
     return(
         <>
@@ -24,6 +28,10 @@ export default function CategoriesClient(){
                   <Plus/>
                   Add Category
                 </button>
+              </div>
+
+              <div className="mt-3">
+                {children}
               </div>
             </div>
 

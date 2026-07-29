@@ -8,6 +8,7 @@ import { isFilled } from '@/lib/checkIsFilled';
 import { Button } from '@/components/ui/button';
 import { createCategory } from '@/app/actions/categories';
 import { toast } from 'sonner';
+import { DynamicIcon } from '@/lib/dynamicIcon';
 
 interface OpenModalProps{
   isOpen:boolean
@@ -46,28 +47,6 @@ const PRESET_COLORS = [
   "#f97316", // Orange
 
 ];
-
-// Dynamic Icon renderer
-function DynamicIcon({
-  name,
-  className = "w-5 h-5",
-}: {
-  name: string;
-  className?: string;
-}) {
-  const formattedName = name
-    .trim()
-    .replace(/(^\w|-\w)/g, (match) => match.replace("-","").toUpperCase())
-
-  //const IconComponent = (LucideIcons as Record<string, any>)[formattedName];
-  const IconComponent = (LucideIcons as unknown as Record<string, LucideIcon>)[formattedName];
-
-  if(!IconComponent){
-    return <LucideIcons.HelpCircle className={`${className} opacity-50`} />
-  }
-
-  return <IconComponent className={className}/>
-}
 
 export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
