@@ -492,3 +492,8 @@
 .card:active {
   transform: scale(0.98);
 }
+
+.children{
+  margin-bottom: 40px;
+  margin-top: 12px;
+}

@@ -30,7 +30,7 @@ export default function CategoriesClient({ children }: CategoriesClientProps){
                 </button>
               </div>
 
-              <div className="mt-3">
+              <div className="children">
                 {children}
               </div>
             </div>

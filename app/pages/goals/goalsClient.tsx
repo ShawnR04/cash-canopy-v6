@@ -30,7 +30,7 @@ export default function GoalsClient({ children }: GoalsClientProps) {
           </button>
         </div>
 
-        <div className="mt-3">
+        <div className="children">
           {children}
         </div>
       </div>
