@@ -1,12 +1,22 @@
 import { X } from 'lucide-react';
-import React from 'react'
+import React, { useState } from 'react'
 
 interface OpenModalProps{
   isOpen:boolean
   setIsOpen: (val: boolean) => void
 }
 
-export default function BudgetsModal({ isOpen, setIsOpen }: OpenModalProps) {
+export default function CreateBudgetsModal({ isOpen, setIsOpen }: OpenModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  type BudgetFormData = {
+    name: string;
+    amount: string;
+    currency: string;
+    period: string;
+    startData: string;
+    endDate: string;
+  }
   return (
     <>
         <div className="modal-background z-2">
