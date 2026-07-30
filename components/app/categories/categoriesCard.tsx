@@ -10,11 +10,12 @@ export default async function CategoriesCard(){
 
     return(
         <>
-            <div className="">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5 flex-1 overflow-y-auto no-scrollbar content-start">
                 {categories && categories.length > 0 ? (
                     categories.map((category) => (
                         <CategoriesCardItem
                             key={category.id}
+                            category={category}
                         />
                     ))
                 ) : (
