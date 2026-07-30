@@ -161,7 +161,6 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                         </button>
                     </div>
 
-                    {/* TODO: Continue witht the update logic */}
                     <div className="flex flex-col gap-3 mt-5">
                         <div className="group flex flex-col gap-2">
                             <div className="flex justify-between items-center gap-2">
@@ -276,7 +275,6 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                             />
                           </div>
 
-                            {/**TODO:  Make the add to account functionality */}
                           {/* Add To Amount */}
                           <div className="group flex flex-col gap-2">
                               <div className="flex justify-between items-center">
@@ -410,7 +408,6 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="active">Active</SelectItem>
-                                  {/*TODO:  This is for the update logic */}
                                   <SelectItem value="achieved">Achieved</SelectItem>
                                   <SelectItem value="paused">Paused</SelectItem>
                                 </SelectContent>
