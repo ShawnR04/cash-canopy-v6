@@ -143,7 +143,7 @@ export default function UpdateCategoriesModal({ isOpen, setIsOpen, category }: O
                 <form onSubmit={handleSubmit} className="modal-form">
                     <div className="flex items-center justify-between relative px-5">
                         <h1 className="form-heading">
-                          Create Category
+                          Update Category
                         </h1>
                         <button
                           onClick={() => setIsOpen(!isOpen)}
@@ -231,7 +231,13 @@ export default function UpdateCategoriesModal({ isOpen, setIsOpen, category }: O
                               }`}
                             />
 
-                            <div className="absolute w-7 h-7 flex items-center justify-center left-3 top-2 rounded-md" style={{ backgroundColor: formData.color }}>
+                            <div 
+                              className="absolute w-7 h-7 flex items-center justify-center left-3 top-2 rounded-md"
+                              style={{
+                                backgroundColor: `${formData.color}20`,
+                                color: formData.color
+                              }}
+                            >
                               <DynamicIcon name={formData.icon} className="w-4 h-4"/>
                             </div>
                           </div>
