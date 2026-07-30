@@ -5,6 +5,8 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import UpdateCategoriesModal from "./updateCategoriesModal";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import { deleteCategory } from "@/app/actions/categories";
+import { toast } from "sonner";
 
 interface Category {
   id: number;
@@ -16,6 +18,7 @@ interface Category {
 export default function CategoriesCardItem({ category }: { category: Category }) {
   const [isPending, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +34,24 @@ export default function CategoriesCardItem({ category }: { category: Category })
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Stop form triggers
+        
+    const formData = new FormData();
+    formData.append("id", String(category.id));
+    setIsDeleting(true);
+
+    const result = await deleteCategory(formData);
+    if (result?.success) {
+        toast.success(`${category.name} deleted successfully!`);
+        setIsMenuOpen(false);
+        setIsDeleting(false);
+    } else {
+        toast.error(result?.error || "Something went wrong.");
+        setIsDeleting(false);
+    }
+};
 
   return (
     <>
@@ -105,10 +126,7 @@ export default function CategoriesCardItem({ category }: { category: Category })
             <button
               type="button"
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-              onClick={() => {
-                setIsMenuOpen(false);
-                // TODO: Trigger delete confirmation logic here
-              }}
+              onClick={handleDelete}
             >
               <Trash2 className="w-4 h-4" />
               Delete
