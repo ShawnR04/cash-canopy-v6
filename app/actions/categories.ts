@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { categoriesTable, InsertCategory } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function createCategory(data: InsertCategory) {
@@ -29,6 +29,78 @@ export async function createCategory(data: InsertCategory) {
       error: error instanceof Error ? error.message : "Failed to save category." 
     };
   }
+}
+
+export async function updateCategory(formData: FormData){
+  try{
+    const userId = await getAuthenticatedUser();
+    if (!userId) {
+      return { success: false, error: "Unauthorized." };
+    }
+
+    const rawId = formData.get("id");
+    if (!rawId) {
+      return { success: false, error: "Category ID is missing." };
+    }
+
+    const id = parseInt(rawId as string, 10);
+    if (isNaN(id)) {
+      return { success: false, error: "Invalid category ID." };
+    }
+
+    const name = formData.get("name") as string;
+    const icon = formData.get("icon") as string;
+    const color = formData.get("color") as string
+
+    if (!name || !icon || !color) {
+      return { success: false, error: "Required fields are missing." };
+    }
+
+    await db
+      .update(categoriesTable)
+      .set({
+        name,
+        icon,
+        color
+      })
+      .where(and(eq(categoriesTable.id, id), eq(categoriesTable.userId, userId)))
+
+    revalidatePath("/categories")
+
+    return { success: true }
+  }catch(error){
+    console.error("Error updating category:", error);
+    return { success: false, error: "Failed to update category. Please try again." };
+  }
+}
+
+export async function deleteCategory(formData: FormData) {
+    try{
+        const userId = await getAuthenticatedUser();
+
+        const rawId = formData.get("id");
+        if(!rawId){
+            return { success: false, error: "Goal ID is missing." };
+        }
+        const id = parseInt(rawId as string, 10);
+
+        if(isNaN(id)){
+            return { success: false, error: "Invalid goal ID." };
+        }
+
+        await db
+            .delete(categoriesTable)
+            .where(and(eq(categoriesTable.id, id), eq(categoriesTable.userId, userId)));
+
+        revalidatePath("/goals");
+        return { success: true };
+    }catch(error){
+        console.error("Failed to delete goal:", error);
+        return { 
+            success: false, 
+            error: "An error occurred while deleting the goal." 
+        };
+    }
 }
 
 export async function getCategories() {
