@@ -425,6 +425,7 @@
 
 /*? Open Modal Background */
 .open-modal-background{
+  background-color: var(--color-background);
   position: sticky;
   top: 0;
   display: flex;

@@ -79,7 +79,7 @@ export default function CategoriesCardItem({ category }: { category: Category })
 
               <div>
                 <h3 
-                  className="font-bold text-lg max-w-36 truncate tracking-tight transition-colors"
+                  className="font-bold text-lg w-25 truncate tracking-tight transition-colors"
                   style={{ color: color }}
                 >
                   {name}
