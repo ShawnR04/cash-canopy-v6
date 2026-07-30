@@ -58,7 +58,10 @@ export default function CategoriesCardItem({ category }: { category: Category })
       <div className="relative" ref={menuRef}>
         <div 
           className="card cursor-pointer"
-          onClick={() => setIsModalOpen(true)}
+          onClick={(e) => {
+              e.stopPropagation(); // Prevents parent card onClick
+              setIsMenuOpen((prev) => !prev);
+            }}
         >
           <div 
             className="absolute h-full w-2/3 opacity-8 blur-lg rounded-full top-0 right-0 pointer-events-none"
@@ -66,7 +69,7 @@ export default function CategoriesCardItem({ category }: { category: Category })
           />
 
           <div className="flex flex-col">
-            <div className="flex gap-5 items-center justify-between">
+            <div className="flex gap-5 items-center">
               <div 
                 className="w-12 h-12 flex items-center justify-center rounded-xl shadow-xs transition-transform group-hover:scale-105 shrink-0"
                 style={{
@@ -79,25 +82,11 @@ export default function CategoriesCardItem({ category }: { category: Category })
 
               <div>
                 <h3 
-                  className="font-bold text-lg w-25 truncate tracking-tight transition-colors"
+                  className="font-bold text-lg w-30 truncate tracking-tight transition-colors"
                   style={{ color: color }}
                 >
                   {name}
                 </h3>
-              </div>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevents parent card onClick
-                    setIsMenuOpen((prev) => !prev);
-                  }}
-                  aria-label="More options"
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </button>
               </div>
             </div>
 
