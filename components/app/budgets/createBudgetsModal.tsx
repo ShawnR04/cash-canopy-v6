@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
+import { createBudget } from '@/app/actions/budgets';
+import { toast } from 'sonner';
 
 interface OpenModalProps{
   isOpen:boolean
@@ -72,11 +74,44 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
     endDate: isFilled(formData.endDate, "date"),
     categoryId: isFilled(formData.categoryId, "select"),
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    const result = await createBudget({
+      name: formData.name,
+      amount: formData.amount, // Ensure this matches your schema (e.g. Number(formData.amount) if required by InsertBudget)
+      currency: formData.currency,
+      period: formData.period,
+      startDate: formData.startDate ? new Date(formData.startDate).toISOString() : new Date().toISOString(),
+      endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+      categoryId: formData.categoryId ? Number(formData.categoryId) : null,
+      // ❌ DO NOT PASS userId here; it is omitted in CreateBudgetInput and handled server-side
+    });
+
+    if (result.success) {
+      toast.success("Budget created successfully");
+      setIsOpen(false);
+    } else {
+      toast.error(result.error || "Failed to create budget");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Error creating budget. Make sure you are logged in");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  // Safe navigation with optional chaining (`categories?.find`)
+  const selectedCategory = categoryOption?.find((c) => c.id === Number(formData.categoryId));
   return (
     <>
         <div className="modal-background z-2">
             <div className="background-glow"/>
-            <form action="" className="modal-form">
+            <form onSubmit={handleSubmit} className="modal-form">
                 <div className="flex items-center justify-between relative">
                     <div className="">
                         <h1 className="form-heading">
@@ -95,9 +130,6 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                       <X/>
                     </button>
                 </div>
-
-                {/* Live Preview */}
-                <div className=""></div>
 
                 <div className="flex flex-col gap-3 mt-5">
                   <div className="grid grid-cols-2 gap-3">
@@ -194,7 +226,7 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                           onValueChange={(value) => {
                             setFormData((prev) => ({
                               ...prev,
-                              categoryId:value ?? ""
+                              categoryId: value ?? ""
                             }));
                           }}
                         >
@@ -205,7 +237,7 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                           </SelectTrigger>
                           <SelectContent>
                             {categoryOption.map((cat) => (
-                              <SelectItem key={cat.id} value={String(cat.name)}>
+                              <SelectItem key={cat.id} value={String(cat.id)}>
                                 {cat.name}
                               </SelectItem>
                             ))}
@@ -354,8 +386,8 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                           </Label>
                         </div>
                         <Input
-                        id="targetDate"
-                        name="targetDate"
+                        id="endDate"
+                        name="endDate"
                         required  
                         type="date"
                         value={formData.endDate}
@@ -376,7 +408,7 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                     >
                       Cancel
                     </Button>
-                          
+
                     <Button
                       type="submit"
                       disabled={isSubmitting}
