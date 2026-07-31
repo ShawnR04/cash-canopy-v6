@@ -141,9 +141,9 @@ export default function UpdateCategoriesModal({ isOpen, setIsOpen, category }: O
             <div className="modal-background z-2">
                 <div className="background-glow"/>
                 <form onSubmit={handleSubmit} className="modal-form">
-                    <div className="flex items-center justify-between relative px-5">
+                    <div className="flex items-center justify-between relative px-5 max-w-19/20">
                         <h1 className="form-heading">
-                          Update Category
+                          Update Category <span>{formData.name}</span>
                         </h1>
                         <button
                           onClick={() => setIsOpen(!isOpen)}

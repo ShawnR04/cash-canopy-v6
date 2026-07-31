@@ -938,7 +938,7 @@ export default function TransactionForm({
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USD");
-  const [type, setType] = useState<"Income" | "Expense">("Expense");
+  const [type, setType] = useState<"Expense" | "Income">("Expense");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
   const [categoryId, setCategoryId] = useState<number | "">("");
@@ -947,22 +947,22 @@ export default function TransactionForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- MUTUAL EXCLUSIVITY FLAGS ---
-  const hasCategory = categoryId !== "";
-  const hasBudget = budgetId !== "";
-  const hasGoal = goalId !== "";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Create local ISO timestamp without UTC shifting issues
+      const selectedDate = date 
+        ? new Date(`${date}T12:00:00.000Z`).toISOString() 
+        : new Date().toISOString();
+
       const res = await createTransaction({
         description,
         amount,
         currency,
         type,
-        date: date ? new Date(`${date}T00:00:00`).toISOString() : new Date().toISOString(),
+        date: selectedDate,
         categoryId: categoryId ? Number(categoryId) : null,
         budgetId: budgetId ? Number(budgetId) : null,
         goalId: goalId ? Number(goalId) : null,
@@ -1116,10 +1116,10 @@ export default function TransactionForm({
           />
         </div>
 
-        {/* --- MUTUALLY EXCLUSIVE SELECTORS --- */}
+        {/* --- SELECTORS (REMOVED MUTUAL EXCLUSIVITY) --- */}
         <div className="flex flex-col gap-3 pt-2 border-t border-zinc-100">
           <p className="text-[11px] font-medium text-zinc-400">
-            Link to one of the following (optional):
+            Link to category, budget, or goal (optional):
           </p>
 
           {/* CATEGORY SELECTOR */}
@@ -1128,10 +1128,9 @@ export default function TransactionForm({
               Category
             </label>
             <select
-              disabled={hasBudget || hasGoal}
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
-              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
             >
               <option value="">Uncategorized</option>
               {categories?.map((cat) => (
@@ -1149,10 +1148,9 @@ export default function TransactionForm({
                 Budget
               </label>
               <select
-                disabled={hasCategory || hasGoal}
                 value={budgetId}
                 onChange={(e) => setBudgetId(e.target.value ? Number(e.target.value) : "")}
-                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs"
               >
                 <option value="">None</option>
                 {budgets?.map((b) => (
@@ -1169,10 +1167,9 @@ export default function TransactionForm({
                 Goal
               </label>
               <select
-                disabled={hasCategory || hasBudget}
                 value={goalId}
                 onChange={(e) => setGoalId(e.target.value ? Number(e.target.value) : "")}
-                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs disabled:opacity-40 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+                className="w-full bg-zinc-50/50 border border-zinc-200 text-zinc-900 text-sm p-2.5 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all text-xs"
               >
                 <option value="">None</option>
                 {goals?.map((g) => (

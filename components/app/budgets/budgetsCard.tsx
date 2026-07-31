@@ -24,6 +24,7 @@
                     categoryName: matchedCategory?.name ?? 'Uncategorized',
                     categoryIcon: matchedCategory?.icon ?? undefined,
                     categoryColor: matchedCategory?.color ?? undefined,
+                    spentAmount: budget.spentAmount ?? 0,
                 }}
                 />
             );

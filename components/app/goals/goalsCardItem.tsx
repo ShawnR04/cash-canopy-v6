@@ -1,8 +1,10 @@
 "use client";
 
-import { updateGoalStatus } from "@/app/actions/goals";
-import { useState, useTransition } from "react";
+import { updateGoalStatus, deleteGoal } from "@/app/actions/goals";
+import { useState, useTransition, useEffect, useRef } from "react";
 import UpdateGoalsModal from "./updateGoalsModal";
+import { Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Goal {
   id: number;
@@ -18,7 +20,39 @@ export type GoalStatus = "active" | "achieved" | "paused";
 
 export default function GoalsCardItem({ goal }: { goal: Goal }) {
   const [isPending, startTransition] = useTransition();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle Delete Action
+  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const formData = new FormData();
+    formData.append("id", String(goal.id));
+    setIsDeleting(true);
+
+    const result = await deleteGoal(formData);
+    if (result?.success) {
+      toast.success(`${goal.name} deleted successfully!`);
+      setIsMenuOpen(false);
+      setIsDeleting(false);
+    } else {
+      toast.error(result?.error || "Failed to delete goal.");
+      setIsDeleting(false);
+    }
+  };
 
   // 1. Progress Metrics
   const targetAmount = parseFloat(goal.targetAmount) || 0;
@@ -28,20 +62,17 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
   // 2. Auto-detect target reached state
   const isTargetReached = targetAmount > 0 && currentAmount >= targetAmount;
 
-  // 3. Directly derive status during render (No local useState for status!)
-  // If target reached, it MUST be "achieved". Otherwise, fall back to DB status or "active".
+  // 3. Derive effective status
   const effectiveStatus: GoalStatus = isTargetReached
     ? "achieved"
     : ((goal.status?.toLowerCase() as GoalStatus) || "active");
 
-  // Color & Badge configuration for UI
   const statusStyles: Record<GoalStatus, string> = {
     active: "bg-blue-500/10 text-primary border-blue-200 hover:bg-blue-500/20",
     achieved: "bg-emerald-500/10 text-success border-emerald-200 hover:bg-emerald-500/20",
     paused: "bg-amber-500/10 text-warning border-amber-200 hover:bg-amber-500/20",
   };
 
-  // Dynamic progress bar colors
   const progressBarStyles: Record<GoalStatus, string> = {
     active: "bg-primary",
     achieved: "bg-success",
@@ -54,10 +85,8 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
     paused: "text-warning",
   };
 
-  // Status Toggle (Only toggles active <-> paused if goal isn't achieved)
   const handleStatusToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-
     if (isTargetReached) return;
 
     const nextStatus: GoalStatus = effectiveStatus === "paused" ? "active" : "paused";
@@ -125,61 +154,99 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
 
   return (
     <>
-      <div className="card cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <div className="flex gap-2">
-          <div className="w-1/2">
-            <h1 className="text-lg font-semibold tracking-tight capitalize">
-              {goal.name}
-            </h1>
-            <p className="text-[12px] text-muted-foreground">
-              Target: {sign}{targetAmount.toFixed(2)}
-            </p>
+      <div className="relative" ref={menuRef}>
+        <div
+          className="card cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen((prev) => !prev);
+          }}
+        >
+          <div className="flex gap-2">
+            <div className="w-1/2">
+              <h1 className="text-lg font-semibold tracking-tight capitalize">
+                {goal.name}
+              </h1>
+              <p className="text-[12px] text-muted-foreground">
+                Target: {sign}{targetAmount.toFixed(2)}
+              </p>
+            </div>
+            <div className="w-1/2 flex flex-col gap-2 items-end justify-center">
+              <button
+                onClick={handleStatusToggle}
+                disabled={isPending || isTargetReached}
+                className={`px-2.5 py-0.5 text-xs font-medium rounded-full border transition-all capitalize ${
+                  statusStyles[effectiveStatus] || statusStyles.active
+                } ${isPending ? "opacity-70 cursor-wait" : ""}`}
+              >
+                {effectiveStatus}
+              </button>
+              <h1 className={`text-sm font-medium ${getDaysLeftColor()}`}>
+                {daysLeftDisplay}
+              </h1>
+            </div>
           </div>
-          <div className="w-1/2 flex flex-col gap-2 items-end justify-center">
-            <button
-              onClick={handleStatusToggle}
-              disabled={isPending || isTargetReached}
-              className={`px-2.5 py-0.5 text-xs font-medium rounded-full border transition-all capitalize ${
-                statusStyles[effectiveStatus] || statusStyles.active
-              } ${isPending ? "opacity-70 cursor-wait" : ""}`}
-            >
-              {effectiveStatus}
-            </button>
-            <h1 className={`text-sm font-medium ${getDaysLeftColor()}`}>
-              {daysLeftDisplay}
-            </h1>
+
+          <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden my-2">
+            <div
+              className={`h-full transition-all duration-300 ease-out rounded-full ${
+                progressBarStyles[effectiveStatus] || progressBarStyles.active
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <div className="w-1/2">
+              <h1 className="font-medium text-[14px]">
+                Saved: {sign}{currentAmount.toFixed(2)}
+              </h1>
+              <p className="text-[14px] text-muted-foreground">
+                ({progress.toFixed(0)}%)
+              </p>
+            </div>
+            <p className="w-1/2 text-[14px] text-muted-foreground flex items-center justify-end">
+              {formattedDate}
+            </p>
           </div>
         </div>
 
-        <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden my-2">
+        {/* --- Dropdown Menu Overlay --- */}
+        {isMenuOpen && (
           <div
-            className={`h-full transition-all duration-300 ease-out rounded-full ${
-              progressBarStyles[effectiveStatus] || progressBarStyles.active
-            }`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+            className="absolute z-50 top-12 right-0 w-40 rounded-xl border border-border bg-popover p-1.5 shadow-lg animate-in fade-in-0 zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-popover-foreground hover:bg-accent transition-colors cursor-pointer"
+              onClick={() => {
+                setIsMenuOpen(false);
+                setIsModalOpen(true);
+              }}
+            >
+              <Edit className="w-4 h-4 text-muted-foreground" />
+              Edit Goal
+            </button>
 
-        <div className="flex gap-2">
-          <div className="w-1/2">
-            <h1 className="font-medium text-[14px]">
-              Saved: {sign}{currentAmount.toFixed(2)}
-            </h1>
-            <p className="text-[14px] text-muted-foreground">
-              ({progress.toFixed(0)}%)
-            </p>
+            <button
+              type="button"
+              disabled={isDeleting}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50"
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4" />
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
           </div>
-          <p className="w-1/2 text-[14px] text-muted-foreground flex items-center justify-end">
-            {formattedDate}
-          </p>
-        </div>
+        )}
       </div>
 
-      {isOpen && (
+      {isModalOpen && (
         <UpdateGoalsModal
           key={`${goal.id}-${goal.currentAmount}-${goal.targetAmount}`}
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
+          isOpen={isModalOpen}
+          setIsOpen={setIsModalOpen}
           goal={goal}
         />
       )}

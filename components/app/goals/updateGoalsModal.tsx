@@ -146,7 +146,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                 <div className="background-glow"/>
                 <form onSubmit={handleSubmit} className="modal-form">
                     <div className="flex items-center justify-between relative">
-                        <div className="">
+                        <div className="flex items-center max-w-19/20 ">
                             <h1 className="form-heading">
                               Update Goal: <span className="capitalize">{goal.name}</span>
                             </h1>
@@ -199,7 +199,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
                           {/* Target Amount */}
                           <div className="group flex flex-col gap-2">
                               <div className="flex justify-between items-center">
@@ -365,57 +365,8 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                               </Select>
                           </div>
                             
-                          {/* Status */}
+                          {/* Date */}
                           <div className="group flex flex-col gap-2">
-                              <div className="flex justify-between items-center gap-2">
-                                <Label
-                                  htmlFor=""
-                                  className="custom-modal-label"
-                                >
-                                  Status
-                                </Label>
-                                <Label
-                                  className={`isfilled-badge ${
-                                    fieldStatus.status
-                                    ? "badge-success"
-                                    : "badge-destructive"
-                                  }`}
-                                >
-                                  {fieldStatus ? 
-                                (
-                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                                  ) : (
-                                    <Asterisk className="w-4 h-4" />
-                                  )}
-                                </Label>
-                              </div>
-                              <Select
-                                id="currency"
-                                name="currency"
-                                required
-                                value={formData.status}
-                                onValueChange={(value) => {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    status:value as "active" | "achieved" | "paused"
-                                  }));
-                                }}
-                              >
-                                <SelectTrigger
-                                className="w-full z-10000"
-                                >
-                                  <SelectValue placeholder="Select Status..."/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="active">Active</SelectItem>
-                                  <SelectItem value="achieved">Achieved</SelectItem>
-                                  <SelectItem value="paused">Paused</SelectItem>
-                                </SelectContent>
-                              </Select>
-                          </div>
-                        </div>
-
-                        <div className="group flex flex-col gap-2">
                             <div className="flex justify-between items-center gap-2">
                               <Label
                                 htmlFor="targetDate"
@@ -450,6 +401,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                               fieldStatus.targetDate ? "focus-visible:ring-success border-success/30" : ""
                             }`}
                           />
+                        </div>
                         </div>
                     </div>
 
