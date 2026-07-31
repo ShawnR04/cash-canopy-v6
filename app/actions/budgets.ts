@@ -44,10 +44,7 @@ export async function getBudgets() {
   try {
     const userId = await getAuthenticatedUser();
     return await db
-      .select({
-        id: budgetsTable.id,
-        name: budgetsTable.name,
-      })
+      .select()
       .from(budgetsTable)
       .where(eq(budgetsTable.userId, userId));
   } catch (error) {

@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isFilled } from "@/lib/checkIsFilled";
-import { Asterisk, BadgeCheck, Check, Loader2, Trash2, X } from "lucide-react";
+import { Asterisk, BadgeCheck, Loader2, Trash2, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import {
   Select,

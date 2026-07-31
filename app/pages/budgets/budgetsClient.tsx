@@ -7,10 +7,11 @@ import { useState } from "react";
 
 interface BudgetsClientProps {
   categories: CategoryOption[];
+  children: React.ReactNode; 
 }
 
-export default function BudgetsClient({ categories }:BudgetsClientProps){
-    const [isOpen, setIsOpen] = useState(!false);
+export default function BudgetsClient({ categories, children }:BudgetsClientProps){
+    const [isOpen, setIsOpen] = useState(false);
     return(
         <>
             <div className="h-full overflow-y-auto no-scrollbar">
@@ -28,6 +29,10 @@ export default function BudgetsClient({ categories }:BudgetsClientProps){
                   <Plus/>
                   Add Budget
                 </button>
+              </div>
+
+              <div className="children">
+                {children}
               </div>
             </div>
 
