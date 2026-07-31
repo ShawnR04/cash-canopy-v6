@@ -1,8 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { isFilled } from '@/lib/checkIsFilled';
-import { X } from 'lucide-react';
+import { Cat, X } from 'lucide-react';
 import React, { useState } from 'react'
 import {
   Select,
@@ -11,40 +10,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createGoal } from '@/app/actions/goals';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 interface OpenModalProps{
   isOpen:boolean
   setIsOpen: (val: boolean) => void
+  categoryOption: CategoryOption[]
 }
-export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) {
-  //const [name, setName] = useState("");
-  //const [targetAmount, setTargetAmount] = useState("");
-  //const [currentAmount, setCurrentAmount] = useState("");
-  //const [currency, setCurrency] = useState("USD");
-  //const [status, setStatus] = useState<"active" | "achieved" | "paused">("active");
-  //const [targetDate, setTargetDate] = useState("");
-  // Define the shape of the form state for TypeScript
+
+export interface CategoryOption {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+}
+
+export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }: OpenModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  type GoalFormData = {
+
+  type BudgetFormData = {
     name: string;
-    targetAmount: string;
-    currentAmount: string;
+    amount: string;
     currency: string;
-    status: "active" | "achieved" | "paused";
-    targetDate: string;
+    period: string;
+    startDate: "Monthly" | "Weekly" | "Yearly" | "Custom";
+    endDate: string;
+    categoryId: string;
   }
 
-  const [formData, setFormData] = useState<GoalFormData>({
+  const [formData, setFormData] = useState<BudgetFormData>({
     name: "",
-    targetAmount: "",
-    currentAmount: "",
+    amount: "",
     currency: "",
-    status: "active",
-    targetDate: ""
+    period: "",
+    startDate: "Monthly",
+    endDate: "",
+    categoryId: ""
   })
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -55,50 +58,26 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
 
   const fieldStatus = {
     name: isFilled(formData.name, "text"),
-    targetAmount: isFilled(formData.targetAmount, "number"),
-    currentAmount: isFilled(formData.currentAmount, "number"),
+    amount: isFilled(formData.amount, "number"),
     currency: isFilled(formData.currency, "select"),
-    status: isFilled(formData.status, "select"),
-    targetDate: isFilled(formData.targetDate, "date")
+    period: isFilled(formData.period, "select"),
+    startDate: isFilled(formData.startDate, "date"),
+    endDate: isFilled(formData.endDate, "date"),
+    categoryId: isFilled(formData.categoryId, "select"),
+
   }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try{
-      await createGoal({
-        name: formData.name,
-        targetAmount: formData.targetAmount,
-        currentAmount: formData.currentAmount || "0",
-        currency: formData.currency,
-        status: formData.status,
-        targetDate: formData.targetDate ? new Date(formData.targetDate) : new Date(),
-        userId: ""
-      });
-
-      toast.success("Goal created successfully!")
-      setIsOpen(false);
-    } catch(error){
-      console.error(error);
-      toast.error("Error creating goal. Make sure you are logged in!")
-    } finally{
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <>
         <div className="modal-background z-2">
             <div className="background-glow"/>
-            <form onSubmit={handleSubmit} className="modal-form">
+            <form action="" className="modal-form">
                 <div className="flex items-center justify-between relative">
                     <div className="">
                         <h1 className="form-heading">
-                          Create New Goal
+                          Create New Budget
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                          Define your milestones and track your journey
+                          Establish your financial milestones and monitor your progress.
                         </p>
                     </div>
                     <button
@@ -111,108 +90,122 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                     </button>
                 </div>
 
+                {/* Live Preview */}
+                <div className=""></div>
+
                 <div className="flex flex-col gap-3 mt-5">
                   <div className="group flex flex-col gap-2">
-                    <div className="flex justify-between items-center gap-2">
-                      <Label
-                        htmlFor="name"
-                        className="custom-modal-label"
-                      >
-                        Goal Name
-                      </Label>
-                      <Label
-                        className={`isfilled-badge ${
-                          fieldStatus.name
-                          ? "badge-success"
-                          : "badge-destructive"
-                        }`}
-                      >
-                        {fieldStatus.name ? "✓ Done" : "Required"}
-                      </Label>
-                    </div>
-                    <Input
+                      <div className="flex justify-between items-center gap-2">
+                        <Label
+                          htmlFor=""
+                          className="custom-modal-label"
+                        >
+                          Budget Name
+                        </Label>
+                        <Label
+                          className={`isfilled-badge ${
+                            fieldStatus.name
+                            ? "badge-success"
+                            : "badge-destructive"
+                          }`}
+                        >
+                          {fieldStatus.name ? "✓ Done" : "Required"}
+                        </Label>
+                      </div>
+                      <Input
                       id="name"
                       name="name"
-                      required
                       type="text"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="e.g. TV"
+                      placeholder=""
                       className={`h-11 ${
                         fieldStatus.name ? "focus-visible:ring-success border-success/30" : ""
                       }`}
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Target Amount */}
+                  <div className="flex justify-between gap-2">
                     <div className="group flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                           <Label
-                            htmlFor="targetAmount"
+                            htmlFor=""
                             className="custom-modal-label"
                           >
-                            Target Amount
+                            Amount
                           </Label>
                           <Label
                             className={`isfilled-badge ${
-                              fieldStatus.targetAmount
+                              fieldStatus.amount
                               ? "badge-success"
                               : "badge-destructive"
                             }`}
                           >
-                            {fieldStatus.targetAmount ? "✓ Done" : "Required"}
+                            {fieldStatus.amount ? "✓ Done" : "Required"}
                           </Label>
                         </div>
                         <Input
-                        id="targetAmount"
-                        name="targetAmount"
-                        required
+                        id="amount"
+                        name="amount"
                         type="number"
-                        value={formData.targetAmount}
+                        value={formData.amount}
                         onChange={handleChange}
                         placeholder=""
                         className={`h-11 ${
-                          fieldStatus.targetAmount ? "focus-visible:ring-success border-success/30" : ""
+                          fieldStatus.amount ? "focus-visible:ring-success border-success/30" : ""
                         }`}
                       />
                     </div>
 
-                    {/* Current Amount */}
+                    {/* Category */}
                     <div className="group flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                           <Label
-                            htmlFor="currentAmount"
+                            htmlFor=""
                             className="custom-modal-label"
                           >
-                            Current Amount
+                            Category
                           </Label>
                           <Label
                             className={`isfilled-badge ${
-                              fieldStatus.currentAmount
+                              fieldStatus.categoryId
                               ? "badge-success"
                               : "badge-destructive"
                             }`}
                           >
-                            {fieldStatus.currentAmount ? "✓ Done" : "Required"}
+                            {fieldStatus.categoryId ? "✓ Done" : "Required"}
                           </Label>
                         </div>
-                        <Input
-                        id="currentAmount"
-                        name="currentAmount"
-                        required
-                        type="number"
-                        value={formData.currentAmount}
-                        onChange={handleChange}
-                        placeholder=""
-                        className={`h-11 ${
-                          fieldStatus.currentAmount ? "focus-visible:ring-success border-success/30" : ""
-                        }`}
-                      />
+                        <Select
+                          id="categoryId"
+                          name="categoryId"
+                          required
+                          value={formData.categoryId}
+                          onValueChange={(value) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              categoryId:value ?? ""
+                            }));
+                          }}
+                        >
+                          <SelectTrigger
+                          className="w-full"
+                          >
+                            <SelectValue placeholder="Select Currency..."/>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categoryOption.map((cat) => (
+                              <SelectItem key={cat.id} value={String(cat.name)}>
+                                {cat.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                     </div>
+                    
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="flex justify-between gap-2">
                     {/* Currency */}
                     <div className="group flex flex-col gap-2">
                         <div className="flex justify-between items-center gap-2">
@@ -229,7 +222,7 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                               : "badge-destructive"
                             }`}
                           >
-                            {fieldStatus ? "✓ Done" : "Required"}
+                            {fieldStatus.currency ? "✓ Done" : "Required"}
                           </Label>
                         </div>
                         <Select
@@ -258,67 +251,103 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                         </Select>
                     </div>
 
-                    {/* Status */}
+                    {/* Period */}
                     <div className="group flex flex-col gap-2">
                         <div className="flex justify-between items-center gap-2">
                           <Label
                             htmlFor=""
                             className="custom-modal-label"
                           >
-                            Status
+                            Period
                           </Label>
                           <Label
                             className={`isfilled-badge ${
-                              fieldStatus.status
+                              fieldStatus.period
                               ? "badge-success"
                               : "badge-destructive"
                             }`}
                           >
-                            {fieldStatus ? "✓ Done" : "Required"}
+                            {fieldStatus.period ? "✓ Done" : "Required"}
                           </Label>
                         </div>
                         <Select
-                          id="currency"
-                          name="currency"
+                          id="period"
+                          name="period"
                           required
-                          value={formData.status}
+                          value={formData.period}
                           onValueChange={(value) => {
                             setFormData((prev) => ({
                               ...prev,
-                              status:value as "active" | "achieved" | "paused"
+                              period:value ?? ""
                             }));
                           }}
                         >
                           <SelectTrigger
                           className="w-full"
                           >
-                            <SelectValue placeholder="Select Status..."/>
+                            <SelectValue placeholder="Select Time Period..."/>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            {/*<SelectItem value="achieved">Achieved</SelectItem>
-                            <SelectItem value="paused">Paused</SelectItem>*/}
+                            <SelectItem value="Weekly">Weekly</SelectItem>
+                            <SelectItem value="Montly">Monthly</SelectItem>
+                            <SelectItem value="Yearly">Yearly</SelectItem>
+                            <SelectItem value="Custom">Custom</SelectItem>
                           </SelectContent>
                         </Select>
                     </div>
                   </div>
 
-                  <div className="group flex flex-col gap-2">
+                  <div className="flex justify-between gap-2">
+                    {/* StartDate */}
+                    <div className="group flex flex-col gap-2">
                         <div className="flex justify-between items-center gap-2">
                           <Label
                             htmlFor="targetDate"
                             className="custom-modal-label"
                           >
-                            Target Date
+                            Start Date
                           </Label>
                           <Label
                             className={`isfilled-badge ${
-                              fieldStatus.targetDate
+                              fieldStatus.startDate
                               ? "badge-success"
                               : "badge-destructive"
                             }`}
                           >
-                            {fieldStatus.targetDate ? "✓ Done" : "Required"}
+                            {fieldStatus.startDate ? "✓ Done" : "Required"}
+                          </Label>
+                        </div>
+                        <Input
+                        id="startDate"
+                        name="startDate"
+                        required  
+                        type="date"
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        placeholder=""
+                        className={`h-11 ${
+                          fieldStatus.startDate ? "focus-visible:ring-success border-success/30" : ""
+                        }`}
+                      />
+                    </div>
+                    
+                    {/* EndDate */}
+                    <div className="group flex flex-col gap-2">
+                        <div className="flex justify-between items-center gap-2">
+                          <Label
+                            htmlFor="endDate"
+                            className="custom-modal-label"
+                          >
+                            End Date
+                          </Label>
+                          <Label
+                            className={`isfilled-badge ${
+                              fieldStatus.endDate
+                              ? "badge-success"
+                              : "badge-destructive"
+                            }`}
+                          >
+                            {fieldStatus.endDate ? "✓ Done" : "Required"}
                           </Label>
                         </div>
                         <Input
@@ -326,18 +355,17 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                         name="targetDate"
                         required  
                         type="date"
-                        value={formData.targetDate}
+                        value={formData.endDate}
                         onChange={handleChange}
                         placeholder=""
                         className={`h-11 ${
-                          fieldStatus.targetDate ? "focus-visible:ring-success border-success/30" : ""
+                          fieldStatus.endDate ? "focus-visible:ring-success border-success/30" : ""
                         }`}
                       />
                     </div>
+                  </div>
 
-                </div>
-
-                <div className="flex gap-3 mt-5">
+                  <div className="flex gap-3 mt-5">
                   <Button
                     variant="outline"
                     className="modal-button h-11"
@@ -351,8 +379,9 @@ export default function CreateGoalsModal({ isOpen, setIsOpen }: OpenModalProps) 
                     disabled={isSubmitting}
                     className="modal-button h-11"
                   >
-                    {isSubmitting ? "Saving..." : "Create Goal"}
+                    {isSubmitting ? "Saving..." : "Create Budget"}
                   </Button>
+                </div>
                 </div>
             </form>
         </div>

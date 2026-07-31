@@ -199,7 +199,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                             />
                         </div>
 
-                        <div className="flex justify-around gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {/* Target Amount */}
                           <div className="group flex flex-col gap-2">
                               <div className="flex justify-between items-center">
@@ -314,7 +314,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                           </div>
                         </div>
 
-                        <div className="flex justify-between gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {/* Currency */}
                           <div className="group flex flex-col gap-2">
                               <div className="flex justify-between items-center gap-2">

@@ -1,12 +1,16 @@
 "use client"
 
-import CreateBudgetsModal from "@/components/app/budgets/createBudgetsModal";
+import CreateBudgetsModal, {CategoryOption} from "@/components/app/budgets/createBudgetsModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-export default function BudgetsClient(){
-    const [isOpen, setIsOpen] = useState(false);
+interface BudgetsClientProps {
+  categories: CategoryOption[];
+}
+
+export default function BudgetsClient({ categories }:BudgetsClientProps){
+    const [isOpen, setIsOpen] = useState(!false);
     return(
         <>
             <div className="h-full overflow-y-auto no-scrollbar">
@@ -31,6 +35,7 @@ export default function BudgetsClient(){
                 <CreateBudgetsModal
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
+                    categoryOption={categories}
                 />
             )}
         </>
