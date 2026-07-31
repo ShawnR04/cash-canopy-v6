@@ -1,9 +1,9 @@
 "use server";
 
 import { db } from "@/db";
-import { budgetsTable, InsertBudget } from "@/db/schema";
+import { budgetsTable, transactionsTable, categoriesTable, InsertBudget } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
-import { eq } from "drizzle-orm";
+import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // Accept dates as strings from the client form
@@ -19,7 +19,6 @@ export async function createBudget(data: CreateBudgetInput) {
   try {
     const userId = await getAuthenticatedUser();
 
-    // Spread input data and cast directly to satisfy Drizzle's single-row insert type
     await db.insert(budgetsTable).values({
       ...data,
       userId,
@@ -43,10 +42,43 @@ export async function createBudget(data: CreateBudgetInput) {
 export async function getBudgets() {
   try {
     const userId = await getAuthenticatedUser();
-    return await db
-      .select()
+
+    const budgets = await db
+      .select({
+        id: budgetsTable.id,
+        name: budgetsTable.name,
+        amount: budgetsTable.amount,
+        currency: budgetsTable.currency,
+        period: budgetsTable.period,
+        startDate: budgetsTable.startDate,
+        endDate: budgetsTable.endDate,
+        categoryId: budgetsTable.categoryId,
+        categoryName: categoriesTable.name,
+        categoryIcon: categoriesTable.icon,
+        categoryColor: categoriesTable.color,
+        spent: sql<number>`COALESCE(SUM(ABS(${transactionsTable.amount})), 0)`.mapWith(Number),
+      })
       .from(budgetsTable)
-      .where(eq(budgetsTable.userId, userId));
+      .leftJoin(
+        categoriesTable,
+        eq(budgetsTable.categoryId, categoriesTable.id)
+      )
+      .leftJoin(
+        transactionsTable,
+        and(
+          eq(transactionsTable.userId, userId),
+          eq(transactionsTable.categoryId, budgetsTable.categoryId),
+          gte(transactionsTable.date, budgetsTable.startDate),
+          lte(transactionsTable.date, budgetsTable.endDate)
+        )
+      )
+      .where(eq(budgetsTable.userId, userId))
+      .groupBy(
+        budgetsTable.id,
+        categoriesTable.id
+      );
+
+    return budgets;
   } catch (error) {
     console.error("Failed to fetch budgets:", error);
     return [];
