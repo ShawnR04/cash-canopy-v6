@@ -47,6 +47,7 @@ export default function SideNav({
                   <button
                     onClick={() => setIsOpen(!isOpen)}
                     aria-label="Open Menu"
+                    className="bg-secondary rounded-md p-1"
                   >
                     <Menu className="w-7 h-7"/>
                   </button>
