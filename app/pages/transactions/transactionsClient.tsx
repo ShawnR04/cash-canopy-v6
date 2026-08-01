@@ -1,12 +1,17 @@
 "use client"
 
-import TransactionsModal from "@/components/app/transactions/transactionsModal";
+import CreateTransactionsModal, {TransactionOption} from "@/components/app/transactions/createTransactionsModal";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-export default function TransactionsClient(){
-    const [isOpen, setIsOpen] = useState(false);
+interface TransactionsClientProps {
+  transactions: TransactionOption;
+  //children: React.ReactNode; 
+}
+
+export default function TransactionsClient({ transactions }: TransactionsClientProps){
+    const [isOpen, setIsOpen] = useState(!false);
     return(
         <>
             <div className="h-full overflow-y-auto no-scrollbar">
@@ -28,9 +33,10 @@ export default function TransactionsClient(){
             </div>
 
             {isOpen && (
-                <TransactionsModal
+                <CreateTransactionsModal
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
+                    transactions={transactions}
                 />
             )}
         </>
