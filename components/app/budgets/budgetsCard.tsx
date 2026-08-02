@@ -117,8 +117,8 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
                     amount: String(budget.amount),
                     currency: budget.currency ?? "USD",
                     period: (budget.period || "monthly") as BudgetPeriod,
-                    // 🚨 FIX: Provide explicit fallback for date fields so they aren't 'undefined'
-                    startDate: budget.startDate,
+                    // Fix: Coalesce undefined to fallback value (e.g., new Date() or null depending on BudgetsCardItem spec)
+                    startDate: budget.startDate ?? new Date(),
                     endDate: budget.endDate ?? null,
                     categoryName: matchedCategory?.name ?? 'Uncategorized',
                     categoryIcon: matchedCategory?.icon ?? undefined,
