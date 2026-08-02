@@ -42,7 +42,7 @@ interface ReportsChartsProps {
   categoryBreakdown: CategoryBreakdownItem[];
 }
 
-// 🚨 Defined OUTSIDE of render to avoid React reconciliation state bugs
+// Custom Tooltip defined outside render to prevent re-render issues
 const CustomAreaTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -65,7 +65,7 @@ const CustomAreaTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Safe Renderer for Icons
+// Helper renderer for dynamic icons & emojis
 const renderIcon = (iconName?: string | null) => {
   if (!iconName) return <ShoppingBag className="w-4 h-4" />;
   if (/\p{Extended_Pictographic}/u.test(iconName)) {
@@ -82,7 +82,7 @@ export default function ReportsCharts({
 }: ReportsChartsProps) {
   const [isMounted, setIsMounted] = useState(false);
 
-  // Avoid SSR hydration issues with Recharts
+  // Prevent SSR hydration mismatches with Recharts
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -101,17 +101,15 @@ export default function ReportsCharts({
 
   return (
     <div className="space-y-6">
-      
       {/* ================= ANNUAL TIMELINE CURVE AREA CHART ================= */}
       <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl shadow-xl space-y-4">
-        
         {/* Chart Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/60 pb-3">
           <div>
             <h3 className="text-sm font-semibold text-zinc-100">Financial Performance</h3>
             <p className="text-[11px] text-zinc-400 mt-0.5">Monthly breakdown of income vs expenses</p>
           </div>
-          
+
           {/* Legend Indicators */}
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
@@ -141,12 +139,12 @@ export default function ReportsCharts({
               </defs>
 
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              
-              <XAxis 
-                dataKey="month" 
-                stroke="#71717a" 
-                fontSize={11} 
-                tickLine={false} 
+
+              <XAxis
+                dataKey="month"
+                stroke="#71717a"
+                fontSize={11}
+                tickLine={false}
                 axisLine={{ stroke: "#27272a" }}
               />
               <YAxis
@@ -156,7 +154,7 @@ export default function ReportsCharts({
                 axisLine={false}
                 tickFormatter={(val) => `$${val}`}
               />
-              
+
               <Tooltip content={<CustomAreaTooltip />} />
 
               {/* Income Area */}
@@ -185,7 +183,6 @@ export default function ReportsCharts({
 
       {/* ================= TOP EXPENSES & CATEGORY BREAKDOWN GRID ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
         {/* Top Expenses Card */}
         <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col justify-between shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
@@ -198,7 +195,7 @@ export default function ReportsCharts({
               <p className="text-xs text-zinc-500 py-6 text-center">No recorded expenses.</p>
             ) : (
               topExpenses.map((item) => {
-                const itemColor = item.color || '#ef4444';
+                const itemColor = item.color || "#ef4444";
 
                 return (
                   <div
@@ -242,7 +239,7 @@ export default function ReportsCharts({
               <p className="text-xs text-zinc-500 py-6 text-center">No category data.</p>
             ) : (
               categoryBreakdown.map((cat) => {
-                const catColor = cat.color || '#3b82f6';
+                const catColor = cat.color || "#3b82f6";
                 const numPercentage = parseFloat(cat.percentage) || 0;
 
                 return (
@@ -292,9 +289,7 @@ export default function ReportsCharts({
             )}
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }

@@ -19,18 +19,10 @@ export default async function ReportsPage() {
     <div className="min-h-screen bg-[#06090e] text-zinc-100 p-6 space-y-6">
       
       {/* Top Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-100">Financial Reports</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Annual spending, income trends, and category distribution.
-          </p>
-        </div>
-
-        <button className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0e1626] border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:bg-cyan-950/30 transition-all">
-          <LucideIcons.UserCheck className="w-3.5 h-3.5" />
-          <span>Switch account</span>
-        </button>
+      <div className="open-modal-background">
+        <h1 className="open-modal-heading">
+          Financial Report
+        </h1>
       </div>
 
       {/* Dynamic Report Charts */}
