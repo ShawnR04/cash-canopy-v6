@@ -139,7 +139,6 @@ export const budgetsTable = pgTable("budgets", {
     .references(() => categoriesTable.id, { onDelete: "cascade" }),
 },
 (table) => ({
-  // FIX: Added missing index block for performance queries on budgets
   budgetsUserIdIdx: index("budgets_user_id_idx").on(table.userId),
 }));
 
@@ -190,9 +189,32 @@ export const goalsTable = pgTable("goals", {
   goalsUserIdTargetDateIdx: index("goals_user_id_target_date_idx").on(table.userId, table.targetDate),
 }));
 
-export const userRelations = relations(user, ({ many }) => ({
+//? User Settings Table (Fixed FK reference to user.id)
+export const userSettingsTable = pgTable("user_settings", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  monthlyIncome: numeric("monthly_income", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  totalEarnedIncome: numeric("total_earned_income", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// Relations
+
+export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
+  settings: one(userSettingsTable),
+}));
+
+export const userSettingsRelations = relations(userSettingsTable, ({ one }) => ({
+  user: one(user, {
+    fields: [userSettingsTable.userId],
+    references: [user.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -257,8 +279,10 @@ export const goalsRelations = relations(goalsTable, ({ one, many }) => ({
   transactions: many(transactionsTable),
 }));
 
-//! Insertion
+//! Inferences & Type Exports
 export type InsertTransaction = typeof transactionsTable.$inferInsert;
 export type InsertBudget = typeof budgetsTable.$inferInsert;
 export type InsertCategory = typeof categoriesTable.$inferInsert;
-export type insertGoal = typeof goalsTable.$inferInsert
+export type InsertGoal = typeof goalsTable.$inferInsert;
+export type InsertUserSettings = typeof userSettingsTable.$inferInsert;
+export type SelectUserSettings = typeof userSettingsTable.$inferSelect;

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import BudgetsCardItem, { BudgetPeriod } from './budgetsCardItem';
+import TotalIncome from './totalIncome';
 
 interface Category {
   id: number;
@@ -26,11 +27,24 @@ interface Budget {
 interface BudgetsCardProps {
   budgets?: Budget[];
   categories?: Category[];
+  initialTotalIncome?: number;
+  initialMonthlyIncome?: number;
 }
 
-export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCardProps) {
+export default function BudgetsCard({
+  budgets = [],
+  categories = [],
+  initialTotalIncome = 12450.00,
+  initialMonthlyIncome = 3200.00,
+}: BudgetsCardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [periodFilter, setStatusFilter] = useState<string>("all");
+
+  // Income State to hold updated figures from TotalIncome modal
+  const [incomeData, setIncomeData] = useState({
+    totalIncome: initialTotalIncome,
+    monthlyIncome: initialMonthlyIncome,
+  });
 
   // Filter and sort budgets dynamically
   const filteredBudgets = useMemo(() => {
@@ -100,6 +114,16 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
         </div>
       </div>
 
+      {/* ================= TOTAL INCOME INTERACTIVE CARD ================= */}
+      <div className="mb-2">
+        <TotalIncome 
+          initialTotalIncome={incomeData.totalIncome} 
+          initialMonthlyIncome={incomeData.monthlyIncome} 
+          currency="USD"
+          onSave={(updated) => setIncomeData(updated)}
+        />
+      </div>
+
       {/* ================= BUDGETS GRID ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 flex-1 overflow-y-auto no-scrollbar content-start">
         {filteredBudgets.length > 0 ? (
@@ -117,7 +141,6 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
                     amount: String(budget.amount),
                     currency: budget.currency ?? "USD",
                     period: (budget.period || "monthly") as BudgetPeriod,
-                    // Fix: Coalesce undefined to fallback value (e.g., new Date() or null depending on BudgetsCardItem spec)
                     startDate: budget.startDate ?? new Date(),
                     endDate: budget.endDate ?? null,
                     categoryName: matchedCategory?.name ?? 'Uncategorized',
