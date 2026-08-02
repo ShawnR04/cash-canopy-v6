@@ -199,7 +199,7 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                             />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 gap-3">
                           {/* Target Amount */}
                           <div className="group flex flex-col gap-2">
                               <div className="flex justify-between items-center">
@@ -233,82 +233,6 @@ export default function UpdateGoalsModal({ isOpen, setIsOpen, goal }: OpenModalP
                               placeholder=""
                               className={`h-11 ${
                                 fieldStatus.targetAmount ? "focus-visible:ring-success border-success/30" : ""
-                              }`}
-                            />
-                          </div>
-
-                          {/* Current Amount */}
-                          <div className="group flex flex-col gap-2">
-                              <div className="flex justify-between items-center">
-                                <Label
-                                  htmlFor="currentAmount"
-                                  className="custom-modal-label"
-                                >
-                                  Change Amount
-                                </Label>
-                                <Label
-                                  className={`isfilled-badge ${
-                                    fieldStatus.currentAmount
-                                    ? "badge-success"
-                                    : "badge-destructive"
-                                  }`}
-                                >
-                                  {fieldStatus.currentAmount ? 
-                                (
-                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                                  ) : (
-                                    <Asterisk className="w-4 h-4" />
-                                  )}
-                                </Label>
-                              </div>
-                              <Input
-                              id="currentAmount"
-                              name="currentAmount"
-                              required
-                              type="number"
-                              value={formData.currentAmount}
-                              onChange={handleChange}
-                              placeholder=""
-                              className={`h-11 ${
-                                fieldStatus.currentAmount ? "focus-visible:ring-success border-success/30" : ""
-                              }`}
-                            />
-                          </div>
-
-                          {/* Add To Amount */}
-                          <div className="group flex flex-col gap-2">
-                              <div className="flex justify-between items-center">
-                                <Label
-                                  htmlFor="currentAmount"
-                                  className="custom-modal-label"
-                                >
-                                  Add to Amount
-                                </Label>
-                                <Label
-                                  className={`isfilled-badge ${
-                                    fieldStatus.addAmount
-                                    ? "badge-success"
-                                    : "badge-destructive"
-                                  }`}
-                                >
-                                  {fieldStatus.addAmount ? 
-                                  (
-                                    <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                                  ) : (
-                                    <Asterisk className="w-4 h-4" />
-                                  )}
-                                </Label>
-                              </div>
-                              <Input
-                              id="addAmount"
-                              name="addAmount"
-                              required
-                              type="number"
-                              value={formData.addAmount}
-                              onChange={handleChange}
-                              placeholder=""
-                              className={`h-11 ${
-                                fieldStatus.addAmount ? "focus-visible:ring-success border-success/30" : ""
                               }`}
                             />
                           </div>
