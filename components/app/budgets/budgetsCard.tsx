@@ -4,7 +4,6 @@ import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import BudgetsCardItem from './budgetsCardItem';
 
-// 🚨 FIX: Allow optional/nullable fields to match CategoryOption expected by BudgetsCardItem
 interface Category {
   id: number;
   name: string;
@@ -115,10 +114,12 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
                 categoryOption={categories as any}
                 budget={{
                   ...budget,
+                  // 🚨 FIX: Convert amount to string to satisfy BudgetsCardItem expectations
+                  amount: String(budget.amount),
                   categoryName: matchedCategory?.name ?? 'Uncategorized',
                   categoryIcon: matchedCategory?.icon ?? undefined,
                   categoryColor: matchedCategory?.color ?? undefined,
-                  spentAmount: budget.spentAmount ?? 0,
+                  spentAmount: Number(budget.spentAmount) || 0,
                 }}
               />
             );
