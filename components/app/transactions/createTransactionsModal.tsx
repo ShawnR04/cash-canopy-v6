@@ -2,6 +2,7 @@
 
 import { Asterisk, BadgeCheck, X } from "lucide-react";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { isFilled } from "@/lib/checkIsFilled";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export default function CreateTransactionsModal({
   setIsOpen,
   transactions,
 }: OpenModalProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   type TransactionFormData = {
@@ -88,6 +90,8 @@ export default function CreateTransactionsModal({
       } else if (field === "goalId" && value) {
         updated.categoryId = "";
         updated.budgetId = "";
+        // Force type to Expense when a goal is selected
+        updated.type = "Expense";
       } else if (field === "categoryId" && value) {
         updated.budgetId = "";
         updated.goalId = "";
@@ -117,17 +121,14 @@ export default function CreateTransactionsModal({
     setIsSubmitting(true);
 
     try {
-      // 1. Convert input date to a valid ISO timestamp format
       const validDate = formData.date
         ? new Date(`${formData.date}T00:00:00`).toISOString()
         : new Date().toISOString();
 
-      // 2. Parse ID strings to numeric values or null
       const categoryId = formData.categoryId ? Number(formData.categoryId) : null;
       const budgetId = formData.budgetId ? Number(formData.budgetId) : null;
       const goalId = formData.goalId ? Number(formData.goalId) : null;
 
-      // 3. Pass a plain JS object directly to the Server Action
       const result = await createTransaction({
         date: validDate,
         description: formData.description,
@@ -142,6 +143,8 @@ export default function CreateTransactionsModal({
       if (result?.success) {
         toast.success("Transaction created successfully!");
         setIsOpen(false);
+        // Triggers Next.js Server Component data refresh so Goal Cards update instantly
+        router.refresh();
       } else {
         toast.error(result?.error || "Failed to create transaction.");
       }
@@ -279,7 +282,7 @@ export default function CreateTransactionsModal({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Type */}
+              {/* Type (Disabled for Income when Goal is selected) */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label className="custom-modal-label">Type</Label>
@@ -295,16 +298,19 @@ export default function CreateTransactionsModal({
                 <div className="grid grid-cols-2 gap-2 h-11">
                   {(["Expense", "Income"] as const).map((t) => {
                     const isActive = formData.type === t;
+                    const isDisabled = hasGoal && t === "Income";
+
                     return (
                       <button
                         key={t}
                         type="button"
+                        disabled={isDisabled}
                         onClick={() => handleSelectChange("type", t)}
                         className={`h-full rounded-md text-sm font-medium transition-colors border ${
                           isActive
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-background hover:bg-accent hover:text-accent-foreground border-input"
-                        }`}
+                        } ${isDisabled ? "opacity-40 cursor-not-allowed hover:bg-background" : ""}`}
                       >
                         {t}
                       </button>
@@ -348,9 +354,7 @@ export default function CreateTransactionsModal({
               {/* Category */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
-                  <Label htmlFor="currency" className="custom-modal-label">
-                    Category
-                  </Label>
+                  <Label className="custom-modal-label">Category</Label>
                   <Label
                     className={`isfilled-badge ${
                       fieldStatus.categoryId
@@ -389,9 +393,7 @@ export default function CreateTransactionsModal({
               {/* Budget */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
-                  <Label htmlFor="currency" className="custom-modal-label">
-                    Budget
-                  </Label>
+                  <Label className="custom-modal-label">Budget</Label>
                   <Label
                     className={`isfilled-badge ${
                       fieldStatus.budgetId
@@ -428,9 +430,7 @@ export default function CreateTransactionsModal({
               {/* Goal */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
-                  <Label htmlFor="currency" className="custom-modal-label">
-                    Goal
-                  </Label>
+                  <Label className="custom-modal-label">Goal</Label>
                   <Label
                     className={`isfilled-badge ${
                       fieldStatus.goalId
