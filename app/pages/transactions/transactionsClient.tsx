@@ -7,10 +7,10 @@ import { useState } from "react";
 
 interface TransactionsClientProps {
   transactions: TransactionOption;
-  //children: React.ReactNode; 
+  children: React.ReactNode; 
 }
 
-export default function TransactionsClient({ transactions }: TransactionsClientProps){
+export default function TransactionsClient({ transactions, children }: TransactionsClientProps){
     const [isOpen, setIsOpen] = useState(false);
     return(
         <>
@@ -29,6 +29,10 @@ export default function TransactionsClient({ transactions }: TransactionsClientP
                   <Plus/>
                   Add Transaction
                 </button>
+              </div>
+
+              <div className="children">
+                {children}
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import { getCategories } from "@/app/actions/categories";
 import { getBudgets } from "@/app/actions/budgets";
 import { getGoals } from "@/app/actions/goals";
 import TransactionsClient from "./transactionsClient";
+import TransactionTableView from "@/components/app/transactions/transactionTableView";
 
 export default async function Transactions(){
     const categories = await getCategories();
@@ -17,7 +18,9 @@ export default async function Transactions(){
         <>
             <TransactionsClient
                 transactions={options}
-            ></TransactionsClient>
+            >
+                <TransactionTableView/>
+            </TransactionsClient>
         </>
     );
 }
