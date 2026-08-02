@@ -15,15 +15,18 @@ import { revalidatePath } from "next/cache";
 // Defining transaction type imports
 export type TransactionType = "Income" | "Expense";
 
-// Accept date as string or Date to handle client form input types smoothly
-export type CreateTransactionInput = Omit<InsertTransaction, "date"> & {
+// Omit server-assigned fields (id, userId, createdAt, updatedAt) and allow date as string/Date
+export type CreateTransactionInput = Omit<
+  InsertTransaction,
+  "id" | "userId" | "createdAt" | "updatedAt" | "date"
+> & {
   date?: string | Date | null;
 };
 
 /* ==========================================================================
    CREATE TRANSACTION
    ========================================================================== */
-export async function createTransaction(data: CreateTransactionInput) {
+export async function createTransaction(data: CreateTransactionInput): Promise<{ success: boolean; error?: string | null }> {
   try {
     // 1. Get the authenticated user ID on the server
     const userId = await getAuthenticatedUser();
@@ -47,9 +50,10 @@ export async function createTransaction(data: CreateTransactionInput) {
     return { success: true };
   } catch (error) {
     console.error("Failed to create transaction:", error);
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to save transaction."
-    );
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save transaction.",
+    };
   }
 }
 
