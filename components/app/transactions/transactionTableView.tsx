@@ -47,7 +47,9 @@ export default function TransactionTableView({
   }, [initialTransactions, searchQuery, typeFilter]);
 
   if (!initialTransactions || initialTransactions.length === 0) {
-    return <div className="p-8 text-center text-zinc-500">No transactions recorded.</div>;
+    return <div className="col-span-full py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
+              No transactions found. Click &apos;Add Transaction&apos; to create one!
+        </div>
   }
 
   return (
@@ -96,8 +98,8 @@ export default function TransactionTableView({
           onDelete={onDelete} 
         />
       ) : (
-        <div className="py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
-          No transactions match your search or filter criteria.
+        <div className="col-span-full py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
+              No transactions found. Click &apos;Add Transaction&apos; to create one!
         </div>
       )}
     </div>
