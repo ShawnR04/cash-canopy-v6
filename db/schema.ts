@@ -327,7 +327,7 @@ export type SelectCategory = typeof categoriesTable.$inferSelect;
 export type InsertCategory = typeof categoriesTable.$inferInsert;
 
 export type SelectGoal = typeof goalsTable.$inferSelect;
-export type InsertGoal = typeof goalsTable.$inferInsert;
+export type insertGoal = typeof goalsTable.$inferInsert;
 
 export type SelectUserSettings = typeof userSettingsTable.$inferSelect;
 export type InsertUserSettings = typeof userSettingsTable.$inferInsert;
