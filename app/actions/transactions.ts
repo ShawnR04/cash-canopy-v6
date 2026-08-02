@@ -15,10 +15,15 @@ import { revalidatePath } from "next/cache";
 // Defining transaction type imports
 export type TransactionType = "Income" | "Expense";
 
+// Accept date as string or Date to handle client form input types smoothly
+export type CreateTransactionInput = Omit<InsertTransaction, "date"> & {
+  date?: string | Date | null;
+};
+
 /* ==========================================================================
    CREATE TRANSACTION
    ========================================================================== */
-export async function createTransaction(data: InsertTransaction) {
+export async function createTransaction(data: CreateTransactionInput) {
   try {
     // 1. Get the authenticated user ID on the server
     const userId = await getAuthenticatedUser();
@@ -37,6 +42,7 @@ export async function createTransaction(data: InsertTransaction) {
     });
 
     revalidatePath("/transactions");
+    revalidatePath("/");
 
     return { success: true };
   } catch (error) {
@@ -110,6 +116,7 @@ export async function updateTransaction(formData: FormData) {
       .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)));
 
     revalidatePath("/transactions");
+    revalidatePath("/");
 
     return { success: true };
   } catch (error) {
@@ -140,6 +147,7 @@ export async function deleteTransaction(formData: FormData) {
       .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)));
 
     revalidatePath("/transactions");
+    revalidatePath("/");
 
     return { success: true };
   } catch (error) {
