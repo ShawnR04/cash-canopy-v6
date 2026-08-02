@@ -36,13 +36,13 @@ const CustomPieTooltip = ({ active, payload }: any) => {
     const data = payload[0].payload;
     return (
       <div className="bg-[#0e1626]/95 border border-zinc-700/80 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl text-xs space-y-1">
-        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+        <div className="flex items-center gap-1.5 font-semibold text-white">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
           {data.name}
         </div>
-        <div className="text-foreground font-bold">
+        <div className="text-white font-bold">
           ${data.amount?.toFixed(2)}{" "}
-          <span className="text-[10px] font-normal text-foreground">({data.percentage})</span>
+          <span className="text-[10px] font-normal text-zinc-300">({data.percentage})</span>
         </div>
       </div>
     );
@@ -225,8 +225,10 @@ export default function DashboardCharts({
                   backgroundColor: "#0e1626", 
                   borderColor: "#27272a", 
                   borderRadius: "12px",
-                  color: "var(--foreground)"
+                  color: "#ffffff"
                 }}
+                itemStyle={{ color: "#ffffff" }}
+                labelStyle={{ color: "#ffffff", fontWeight: "bold" }}
               />
               <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
                 {overviewData.map((entry, index) => (
