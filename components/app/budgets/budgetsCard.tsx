@@ -4,11 +4,12 @@ import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import BudgetsCardItem from './budgetsCardItem';
 
+// 🚨 FIX: Allow optional/nullable fields to match CategoryOption expected by BudgetsCardItem
 interface Category {
   id: number;
   name: string;
-  icon?: string;
-  color?: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 interface Budget {
@@ -111,7 +112,7 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
             return (
               <BudgetsCardItem
                 key={budget.id}
-                categoryOption={categories}
+                categoryOption={categories as any}
                 budget={{
                   ...budget,
                   categoryName: matchedCategory?.name ?? 'Uncategorized',
