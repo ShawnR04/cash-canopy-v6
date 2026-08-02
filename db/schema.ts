@@ -173,7 +173,7 @@ export const goalsTable = pgTable(
   ],
 );
 
-// Transactions Table
+// Transactions Table (UPDATED: onDelete: "cascade" for Category, Budget, and Goal)
 export const transactionsTable = pgTable(
   "transactions",
   {
@@ -188,13 +188,13 @@ export const transactionsTable = pgTable(
     type: text("type", { enum: ["Income", "Expense"] }).notNull(),
 
     categoryId: integer("category_id").references(() => categoriesTable.id, {
-      onDelete: "set null",
+      onDelete: "cascade",
     }),
     budgetId: integer("budget_id").references(() => budgetsTable.id, {
-      onDelete: "set null",
+      onDelete: "cascade",
     }),
     goalId: integer("goal_id").references(() => goalsTable.id, {
-      onDelete: "set null",
+      onDelete: "cascade",
     }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -210,7 +210,7 @@ export const transactionsTable = pgTable(
   ],
 );
 
-// User Settings Table (tracks current balance across transactions)
+// User Settings Table
 export const userSettingsTable = pgTable("user_settings", {
   userId: text("user_id")
     .primaryKey()
@@ -327,7 +327,7 @@ export type SelectCategory = typeof categoriesTable.$inferSelect;
 export type InsertCategory = typeof categoriesTable.$inferInsert;
 
 export type SelectGoal = typeof goalsTable.$inferSelect;
-export type insertGoal = typeof goalsTable.$inferInsert;
+export type InsertGoal = typeof goalsTable.$inferInsert;
 
 export type SelectUserSettings = typeof userSettingsTable.$inferSelect;
 export type InsertUserSettings = typeof userSettingsTable.$inferInsert;
