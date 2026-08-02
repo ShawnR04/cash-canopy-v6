@@ -54,7 +54,7 @@ export default function CreateTransactionsModal({
   };
 
   const [formData, setFormData] = useState<TransactionFormData>({
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     description: "",
     amount: "",
     currency: "USD",
@@ -115,6 +115,37 @@ export default function CreateTransactionsModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    try {
+      // 1. Convert input date to a valid ISO timestamp format
+      const validDate = formData.date
+        ? new Date(`${formData.date}T00:00:00`).toISOString()
+        : new Date().toISOString();
+
+      // 2. Pass a plain JS object directly to the Server Action (DO NOT use FormData)
+      const result = await createTransaction({
+        date: validDate,
+        description: formData.description,
+        amount: formData.amount,
+        currency: formData.currency || "USD",
+        type: formData.type,
+        categoryId: formData.categoryId || null,
+        budgetId: formData.budgetId || null,
+        goalId: formData.goalId || null,
+      });
+
+      if (result?.success) {
+        toast.success("Transaction created successfully!");
+        setIsOpen(false);
+      } else {
+        toast.error(result?.error || "Failed to create transaction.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while creating the transaction.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -246,9 +277,7 @@ export default function CreateTransactionsModal({
               {/* Type */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
-                  <Label htmlFor="type" className="custom-modal-label">
-                    Type
-                  </Label>
+                  <Label className="custom-modal-label">Type</Label>
                   <Label
                     className={`isfilled-badge ${
                       fieldStatus.type ? "badge-success" : "badge-destructive"
@@ -257,20 +286,26 @@ export default function CreateTransactionsModal({
                     {fieldStatus.type ? "✓ Done" : "Required"}
                   </Label>
                 </div>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value) =>
-                    handleSelectChange("type", (value ?? "Expense") as "Income" | "Expense")
-                  }
-                >
-                  <SelectTrigger className="w-full h-11">
-                    <SelectValue placeholder="Select Type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Expense">Expense</SelectItem>
-                    <SelectItem value="Income">Income</SelectItem>
-                  </SelectContent>
-                </Select>
+
+                <div className="grid grid-cols-2 gap-2 h-11">
+                  {(["Expense", "Income"] as const).map((t) => {
+                    const isActive = formData.type === t;
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => handleSelectChange("type", t)}
+                        className={`h-full rounded-md text-sm font-medium transition-colors border ${
+                          isActive
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background hover:bg-accent hover:text-accent-foreground border-input"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Date */}
@@ -329,7 +364,9 @@ export default function CreateTransactionsModal({
                 <Select
                   disabled={hasBudget || hasGoal}
                   value={formData.categoryId}
-                  onValueChange={(val) => handleSelectChange("categoryId", val ?? "")}
+                  onValueChange={(val) =>
+                    handleSelectChange("categoryId", val ?? "")
+                  }
                 >
                   <SelectTrigger className="w-full h-11">
                     <SelectValue placeholder="None" />
