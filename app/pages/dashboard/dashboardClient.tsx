@@ -30,19 +30,19 @@ interface DashboardChartsProps {
   totalIncome: number;
 }
 
-// 🚨 FIX: Defined OUTSIDE of DashboardCharts component
+// Custom Tooltip for Pie Chart
 const CustomPieTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
       <div className="bg-[#0e1626]/95 border border-zinc-700/80 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl text-xs space-y-1">
-        <div className="flex items-center gap-1.5 font-semibold text-zinc-100">
+        <div className="flex items-center gap-1.5 font-semibold text-foreground">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
           {data.name}
         </div>
-        <div className="text-zinc-300 font-bold">
+        <div className="text-foreground font-bold">
           ${data.amount?.toFixed(2)}{" "}
-          <span className="text-[10px] font-normal text-zinc-400">({data.percentage})</span>
+          <span className="text-[10px] font-normal text-foreground">({data.percentage})</span>
         </div>
       </div>
     );
@@ -94,8 +94,8 @@ export default function DashboardCharts({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-100">Spending by Category</h3>
-            <p className="text-[11px] text-zinc-400 mt-0.5">Distribution across active categories</p>
+            <h3 className="text-sm font-semibold text-foreground">Spending by Category</h3>
+            <p className="text-[11px] text-foreground mt-0.5">Distribution across active categories</p>
           </div>
           <span className="text-xs font-bold text-sky-400 bg-sky-950/40 border border-sky-800/40 px-2.5 py-1 rounded-full">
             {categoryBreakdown.length} Categories
@@ -135,10 +135,10 @@ export default function DashboardCharts({
 
             {/* Donut Center Overlay */}
             <div className="absolute text-center pointer-events-none flex flex-col items-center">
-              <span className="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase">
+              <span className="text-[10px] text-foreground font-semibold tracking-wider uppercase">
                 Expenses
               </span>
-              <span className="text-base font-extrabold text-zinc-100 mt-0.5">
+              <span className="text-base font-extrabold text-foreground mt-0.5">
                 ${totalExpenses.toFixed(0)}
               </span>
             </div>
@@ -147,7 +147,7 @@ export default function DashboardCharts({
           {/* Category Progress List */}
           <div className="sm:col-span-7 flex flex-col gap-2.5 max-h-52 overflow-y-auto pr-1">
             {categoryBreakdown.length === 0 ? (
-              <p className="text-xs text-zinc-500 text-center py-6">No spending data available.</p>
+              <p className="text-xs text-foreground text-center py-6">No spending data available.</p>
             ) : (
               categoryBreakdown.map((cat) => {
                 const numPercentage = parseFloat(cat.percentage) || 0;
@@ -168,16 +168,16 @@ export default function DashboardCharts({
                         >
                           {renderCategoryIcon(cat.icon)}
                         </span>
-                        <span className="font-semibold text-zinc-200 truncate max-w-[100px]">
+                        <span className="font-semibold text-foreground truncate max-w-[100px]">
                           {cat.name}
                         </span>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="font-bold text-zinc-100">
+                        <span className="font-bold text-foreground">
                           ${cat.amount.toFixed(2)}
                         </span>
-                        <span className="text-[10px] text-zinc-400 ml-1.5 font-medium">
+                        <span className="text-[10px] text-foreground ml-1.5 font-medium">
                           {cat.percentage}
                         </span>
                       </div>
@@ -206,8 +206,8 @@ export default function DashboardCharts({
       <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col justify-between shadow-xl">
         <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-100">Total Overview</h3>
-            <p className="text-[11px] text-zinc-400 mt-0.5">Compare overall income vs expenses</p>
+            <h3 className="text-sm font-semibold text-foreground">Total Overview</h3>
+            <p className="text-[11px] text-foreground mt-0.5">Compare overall income vs expenses</p>
           </div>
           <span className="text-xs text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-800/40">
             Net: +${(totalIncome - totalExpenses).toFixed(2)}
@@ -217,15 +217,15 @@ export default function DashboardCharts({
         <div className="h-52 mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={overviewData} barSize={50}>
-              <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} />
-              <YAxis stroke="#71717a" fontSize={11} tickLine={false} />
+              <XAxis dataKey="name" stroke="currentColor" className="text-foreground" fontSize={11} tickLine={false} />
+              <YAxis stroke="currentColor" className="text-foreground" fontSize={11} tickLine={false} />
               <Tooltip
                 cursor={{ fill: "rgba(255, 255, 255, 0.03)" }}
                 contentStyle={{ 
                   backgroundColor: "#0e1626", 
                   borderColor: "#27272a", 
                   borderRadius: "12px",
-                  color: "#f4f4f5"
+                  color: "var(--foreground)"
                 }}
               />
               <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
