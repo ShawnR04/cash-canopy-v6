@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
-import BudgetsCardItem from './budgetsCardItem';
+import BudgetsCardItem, { BudgetPeriod } from './budgetsCardItem';
 
 interface Category {
   id: number;
@@ -16,7 +16,7 @@ interface Budget {
   name: string;
   amount: string | number;
   spentAmount?: string | number;
-  period?: string;
+  period?: BudgetPeriod | "";
   currency?: string;
   categoryId?: number | string | null;
   startDate?: Date | string | null;
@@ -48,7 +48,7 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
           budget.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
           categoryName.toLowerCase().includes(searchQuery.toLowerCase().trim());
 
-        // 2. Period Filter (e.g. "monthly", "yearly", etc.)
+        // 2. Period Filter (e.g. "monthly", "yearly", "weekly", etc.)
         const budgetPeriod = budget.period?.toLowerCase() || "";
         const matchesPeriod =
           periodFilter === "all" ? true : budgetPeriod === periodFilter;
@@ -109,19 +109,24 @@ export default function BudgetsCard({ budgets = [], categories = [] }: BudgetsCa
             );
 
             return (
-              <BudgetsCardItem
-                key={budget.id}
-                categoryOption={categories as any}
-                budget={{
-                  ...budget,
-                  // 🚨 FIX: Convert amount to string to satisfy BudgetsCardItem expectations
-                  amount: String(budget.amount),
-                  categoryName: matchedCategory?.name ?? 'Uncategorized',
-                  categoryIcon: matchedCategory?.icon ?? undefined,
-                  categoryColor: matchedCategory?.color ?? undefined,
-                  spentAmount: Number(budget.spentAmount) || 0,
-                }}
-              />
+              <div key={budget.id} className="h-full">
+                <BudgetsCardItem
+                  categoryOption={categories as any}
+                  budget={{
+                    ...budget,
+                    amount: String(budget.amount),
+                    currency: budget.currency ?? "USD",
+                    period: (budget.period || "monthly") as BudgetPeriod,
+                    // 🚨 FIX: Provide explicit fallback for date fields so they aren't 'undefined'
+                    startDate: budget.startDate,
+                    endDate: budget.endDate ?? null,
+                    categoryName: matchedCategory?.name ?? 'Uncategorized',
+                    categoryIcon: matchedCategory?.icon ?? undefined,
+                    categoryColor: matchedCategory?.color ?? undefined,
+                    spentAmount: Number(budget.spentAmount) || 0,
+                  }}
+                />
+              </div>
             );
           })
         ) : (
