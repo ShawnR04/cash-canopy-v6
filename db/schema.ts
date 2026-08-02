@@ -1,5 +1,19 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index, serial, numeric, varchar, integer } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  numeric,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+// ============================================================================
+// Auth & Identity Tables (Better-Auth / NextAuth standard layout)
+// ============================================================================
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -10,7 +24,7 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
@@ -24,7 +38,8 @@ export const session = pgTable(
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
@@ -53,7 +68,8 @@ export const account = pgTable(
     password: text("password"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)],
@@ -69,145 +85,160 @@ export const verification = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-// Database Tables
+// ============================================================================
+// Application Core Tables
+// ============================================================================
 
-//? Transactions Table
-export const transactionsTable = pgTable("transactions", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
-    
-  date: timestamp("date").notNull(),
-  description: text("description").notNull(),
-  amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
-  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
-  type: text("type", { enum: ["Income", "Expense"] }).notNull(),
+// Categories Table
+export const categoriesTable = pgTable(
+  "categories",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    icon: text("icon").notNull(),
+    color: text("color").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("categories_user_id_idx").on(table.userId)],
+);
 
-  categoryId: integer("category_id")
-    .references(() => categoriesTable.id, { onDelete: "set null" }),
+// Budgets Table
+export const budgetsTable = pgTable(
+  "budgets",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
+    currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+    period: text("period", { enum: ["Monthly", "Weekly", "Yearly", "Custom"] })
+      .default("Monthly")
+      .notNull(),
+    startDate: timestamp("start_date").notNull(),
+    endDate: timestamp("end_date"),
+    categoryId: integer("category_id").references(() => categoriesTable.id, {
+      onDelete: "cascade",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("budgets_user_id_idx").on(table.userId)],
+);
 
-  budgetId: integer("budget_id")
-    .references(() => budgetsTable.id, { onDelete: "set null" }),
+// Goals Table
+export const goalsTable = pgTable(
+  "goals",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    targetAmount: numeric("target_amount", { precision: 12, scale: 2 }).notNull(),
+    currentAmount: numeric("current_amount", { precision: 12, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+    status: text("status", { enum: ["active", "achieved", "paused"] })
+      .default("active")
+      .notNull(),
+    targetDate: timestamp("target_date").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("goals_user_id_idx").on(table.userId),
+    index("goals_user_id_target_date_idx").on(table.userId, table.targetDate),
+  ],
+);
 
-  goalId: integer("goal_id")
-    .references(() => goalsTable.id, { onDelete: "set null" }),
+// Transactions Table
+export const transactionsTable = pgTable(
+  "transactions",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    date: timestamp("date").notNull(),
+    description: text("description").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
+    currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+    type: text("type", { enum: ["Income", "Expense"] }).notNull(),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
-},
-(table) => ({
-  transactionsUserIdIdx: index("transactions_user_id_idx").on(table.userId),
-  transactionsUserIdDateIdx: index("transactions_user_id_date_idx").on(table.userId, table.date),
-  transactionsCategoryIdIdx: index("transactions_category_id_idx").on(table.categoryId),
-}));
+    categoryId: integer("category_id").references(() => categoriesTable.id, {
+      onDelete: "set null",
+    }),
+    budgetId: integer("budget_id").references(() => budgetsTable.id, {
+      onDelete: "set null",
+    }),
+    goalId: integer("goal_id").references(() => goalsTable.id, {
+      onDelete: "set null",
+    }),
 
-//? Budgets Table
-export const budgetsTable = pgTable("budgets", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("transactions_user_id_idx").on(table.userId),
+    index("transactions_user_id_date_idx").on(table.userId, table.date),
+    index("transactions_category_id_idx").on(table.categoryId),
+  ],
+);
 
-  name: text("name").notNull(),
-  amount: numeric("amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
-  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
-
-  period: text("period", { enum: ["Monthly", "Weekly", "Yearly", "Custom"] })
-    .default("Monthly")
-    .notNull(),
-    
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"),
-
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
-
-  categoryId: integer("category_id")
-    .references(() => categoriesTable.id, { onDelete: "cascade" }),
-},
-(table) => ({
-  budgetsUserIdIdx: index("budgets_user_id_idx").on(table.userId),
-}));
-
-//? Categories Table
-export const categoriesTable = pgTable("categories", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
-
-  name: text("name").notNull(),
-  icon: text("icon").notNull(),
-  color: text("color").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-},
-(table) => ({
-  categoriesUserIdIdx: index("categories_user_id_idx").on(table.userId),
-}));
-
-//? Goals Table
-export const goalsTable = pgTable("goals", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
-    
-  name: text("name").notNull(),
-  targetAmount: numeric("target_amount", { precision: 12, scale: 2 }).notNull(),
-  currentAmount: numeric("current_amount", { precision: 12, scale: 2 }).default("0.00").notNull(),
-  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
-  status: text("status", { enum: ["active", "achieved", "paused"] })
-    .default("active")
-    .notNull(),
-
-  targetDate: timestamp("target_date").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
-},
-(table) => ({
-  goalsUserIdIdx: index("goals_user_id_idx").on(table.userId),
-  goalsUserIdTargetDateIdx: index("goals_user_id_target_date_idx").on(table.userId, table.targetDate),
-}));
-
-//? User Settings Table (Fixed FK reference to user.id)
+// User Settings Table (tracks current balance across transactions)
 export const userSettingsTable = pgTable("user_settings", {
   userId: text("user_id")
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
-  monthlyIncome: numeric("monthly_income", { precision: 12, scale: 2 }).default("0.00").notNull(),
-  totalEarnedIncome: numeric("total_earned_income", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  monthlyIncome: numeric("monthly_income", { precision: 12, scale: 2 })
+    .default("0.00")
+    .notNull(),
+  netBalance: numeric("net_balance", { precision: 12, scale: 2 })
+    .default("0.00")
+    .notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
 });
 
-// Relations
+// ============================================================================
+// Drizzle Relations Definitions
+// ============================================================================
 
 export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
   settings: one(userSettingsTable),
+  transactions: many(transactionsTable),
+  budgets: many(budgetsTable),
+  categories: many(categoriesTable),
+  goals: many(goalsTable),
 }));
 
 export const userSettingsRelations = relations(userSettingsTable, ({ one }) => ({
@@ -279,10 +310,24 @@ export const goalsRelations = relations(goalsTable, ({ one, many }) => ({
   transactions: many(transactionsTable),
 }));
 
-//! Inferences & Type Exports
+// ============================================================================
+// Type Exports
+// ============================================================================
+
+export type SelectUser = typeof user.$inferSelect;
+export type InsertUser = typeof user.$inferInsert;
+
+export type SelectTransaction = typeof transactionsTable.$inferSelect;
 export type InsertTransaction = typeof transactionsTable.$inferInsert;
+
+export type SelectBudget = typeof budgetsTable.$inferSelect;
 export type InsertBudget = typeof budgetsTable.$inferInsert;
+
+export type SelectCategory = typeof categoriesTable.$inferSelect;
 export type InsertCategory = typeof categoriesTable.$inferInsert;
+
+export type SelectGoal = typeof goalsTable.$inferSelect;
 export type InsertGoal = typeof goalsTable.$inferInsert;
-export type InsertUserSettings = typeof userSettingsTable.$inferInsert;
+
 export type SelectUserSettings = typeof userSettingsTable.$inferSelect;
+export type InsertUserSettings = typeof userSettingsTable.$inferInsert;

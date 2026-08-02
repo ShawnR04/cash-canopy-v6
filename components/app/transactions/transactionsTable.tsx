@@ -152,8 +152,8 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
   return (
     <div className="w-full bg-[#030712] text-slate-100 rounded-lg shadow-xl border border-slate-800">
       
-      {/* ================= DESKTOP TABLE VIEW (lg and up: >=1024px) ================= */}
-      <div className="hidden lg:block overflow-x-auto">
+      {/* ================= DESKTOP TABLE VIEW (md and up) ================= */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-800 text-sky-400 font-semibold text-sm">
@@ -247,8 +247,8 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
         </table>
       </div>
 
-      {/* ================= MOBILE / TABLET LIST VIEW (below lg: <1024px) ================= */}
-      <div className="block lg:hidden divide-y divide-slate-800">
+      {/* ================= MOBILE LIST VIEW (sm and below) ================= */}
+      <div className="block md:hidden divide-y divide-slate-800">
         {transactions.map((t) => {
           const classification = getClassification(t);
           const isDeletingThis = isPending && deletingId === t.id;

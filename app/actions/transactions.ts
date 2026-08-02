@@ -6,6 +6,7 @@ import {
   categoriesTable, 
   budgetsTable, 
   goalsTable, 
+  userSettingsTable,
   InsertTransaction
 } from "@/db/schema";
 import { getAuthenticatedUser } from "./getAuthenticatedUser";
@@ -21,6 +22,31 @@ export type CreateTransactionInput = Omit<
   date?: string | Date | null;
 };
 
+/**
+ * Helper: Updates user_settings.netBalance atomically.
+ * Compatible with neon-http driver.
+ */
+async function updateNetBalance(
+  userId: string,
+  amountChange: number
+) {
+  if (amountChange === 0) return;
+
+  await db
+    .insert(userSettingsTable)
+    .values({
+      userId,
+      netBalance: String(amountChange),
+    })
+    .onConflictDoUpdate({
+      target: userSettingsTable.userId,
+      set: {
+        netBalance: sql`${userSettingsTable.netBalance} + ${amountChange}::numeric`,
+        updatedAt: new Date(),
+      },
+    });
+}
+
 /* ==========================================================================
    CREATE TRANSACTION
    ========================================================================== */
@@ -32,6 +58,10 @@ export async function createTransaction(data: CreateTransactionInput): Promise<{
     const goalId = data.goalId ?? null;
     const finalType: TransactionType = goalId ? "Expense" : (data.type ?? "Expense");
     const numAmount = parseFloat(String(data.amount));
+
+    if (isNaN(numAmount)) {
+      return { success: false, error: "Invalid transaction amount." };
+    }
 
     // 2. Insert transaction
     await db.insert(transactionsTable).values({
@@ -47,7 +77,7 @@ export async function createTransaction(data: CreateTransactionInput): Promise<{
     });
 
     // 3. Increment the goal's current total if tied to a goal
-    if (goalId && !isNaN(numAmount)) {
+    if (goalId) {
       await db
         .update(goalsTable)
         .set({
@@ -56,6 +86,10 @@ export async function createTransaction(data: CreateTransactionInput): Promise<{
         })
         .where(and(eq(goalsTable.id, goalId), eq(goalsTable.userId, userId)));
     }
+
+    // 4. Update Net Balance (+ for Income, - for Expense)
+    const balanceDelta = finalType === "Income" ? numAmount : -numAmount;
+    await updateNetBalance(userId, balanceDelta);
 
     revalidatePath("/transactions");
     revalidatePath("/goals");
@@ -109,27 +143,35 @@ export async function updateTransaction(formData: FormData) {
     const budgetId = rawBudgetId ? parseInt(rawBudgetId, 10) : null;
     const newGoalId = rawGoalId ? parseInt(rawGoalId, 10) : null;
 
-    // Enforce "Expense" if goal is present
     const validTypes: TransactionType[] = ["Income", "Expense"];
     const initialType = validTypes.includes(rawType) ? rawType : "Expense";
     const finalType = newGoalId ? "Expense" : initialType;
 
     const newAmountNum = parseFloat(amount);
+    if (isNaN(newAmountNum)) {
+      return { success: false, error: "Invalid transaction amount." };
+    }
 
-    // Fetch existing transaction to recalculate goal adjustments accurately
+    // Fetch existing transaction to calculate delta adjustments accurately
     const existing = await db
       .select({
         amount: transactionsTable.amount,
+        type: transactionsTable.type,
         goalId: transactionsTable.goalId,
       })
       .from(transactionsTable)
       .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)))
       .limit(1);
 
-    const oldGoalId = existing[0]?.goalId ?? null;
-    const oldAmountNum = existing[0] ? parseFloat(String(existing[0].amount)) : 0;
+    if (existing.length === 0) {
+      return { success: false, error: "Transaction not found." };
+    }
 
-    // Execute transaction update
+    const oldGoalId = existing[0].goalId ?? null;
+    const oldAmountNum = parseFloat(String(existing[0].amount));
+    const oldType = existing[0].type as TransactionType;
+
+    // Update transaction
     await db
       .update(transactionsTable)
       .set({
@@ -145,32 +187,45 @@ export async function updateTransaction(formData: FormData) {
       })
       .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)));
 
-    // Rebalance goal values:
-    // Case A: Goal didn't change, update difference
+    // Rebalance goal values
     if (oldGoalId && newGoalId && oldGoalId === newGoalId) {
       const diff = newAmountNum - oldAmountNum;
       if (diff !== 0) {
         await db
           .update(goalsTable)
-          .set({ currentAmount: sql`${goalsTable.currentAmount} + ${diff}` })
+          .set({ 
+            currentAmount: sql`${goalsTable.currentAmount} + ${diff}`,
+            updatedAt: new Date(),
+          })
           .where(and(eq(goalsTable.id, newGoalId), eq(goalsTable.userId, userId)));
       }
     } else {
-      // Case B: Old goal unlinked -> subtract old amount
       if (oldGoalId) {
         await db
           .update(goalsTable)
-          .set({ currentAmount: sql`${goalsTable.currentAmount} - ${oldAmountNum}` })
+          .set({ 
+            currentAmount: sql`${goalsTable.currentAmount} - ${oldAmountNum}`,
+            updatedAt: new Date(),
+          })
           .where(and(eq(goalsTable.id, oldGoalId), eq(goalsTable.userId, userId)));
       }
-      // Case C: New goal linked -> add new amount
       if (newGoalId) {
         await db
           .update(goalsTable)
-          .set({ currentAmount: sql`${goalsTable.currentAmount} + ${newAmountNum}` })
+          .set({ 
+            currentAmount: sql`${goalsTable.currentAmount} + ${newAmountNum}`,
+            updatedAt: new Date(),
+          })
           .where(and(eq(goalsTable.id, newGoalId), eq(goalsTable.userId, userId)));
       }
     }
+
+    // Rebalance Net Balance
+    const oldContribution = oldType === "Income" ? oldAmountNum : -oldAmountNum;
+    const newContribution = finalType === "Income" ? newAmountNum : -newAmountNum;
+    const netBalanceDelta = newContribution - oldContribution;
+
+    await updateNetBalance(userId, netBalanceDelta);
 
     revalidatePath("/transactions");
     revalidatePath("/goals");
@@ -200,10 +255,11 @@ export async function deleteTransaction(formData: FormData) {
       return { success: false, error: "Invalid transaction ID." };
     }
 
-    // Get goal info before deletion so we can deduct it
+    // Get goal and amount info before deletion
     const existing = await db
       .select({
         amount: transactionsTable.amount,
+        type: transactionsTable.type,
         goalId: transactionsTable.goalId,
       })
       .from(transactionsTable)
@@ -211,8 +267,9 @@ export async function deleteTransaction(formData: FormData) {
       .limit(1);
 
     if (existing.length > 0) {
-      const { goalId, amount } = existing[0];
+      const { goalId, amount, type } = existing[0];
       const numAmount = parseFloat(String(amount));
+      const txType = type as TransactionType;
 
       // Delete transaction
       await db
@@ -229,6 +286,10 @@ export async function deleteTransaction(formData: FormData) {
           })
           .where(and(eq(goalsTable.id, goalId), eq(goalsTable.userId, userId)));
       }
+
+      // Reverse impact on Net Balance
+      const balanceDelta = txType === "Income" ? -numAmount : numAmount;
+      await updateNetBalance(userId, balanceDelta);
     }
 
     revalidatePath("/transactions");
@@ -293,4 +354,3 @@ export async function getTransactions() {
     return [];
   }
 }
-
