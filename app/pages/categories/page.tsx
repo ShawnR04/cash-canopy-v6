@@ -1,12 +1,16 @@
-import CategoriesCard from "@/components/app/categories/categoriesCard";
-import CategoriesClient from "./categoriesClient";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default function Categories(){
-    return(
-        <>
-            <CategoriesClient>
-                <CategoriesCard/>
-            </CategoriesClient>
-        </>
-    );
+import { getCategories } from "@/app/actions/categories";
+import CategoriesClient from "./categoriesClient";
+import CategoriesCard from "@/components/app/categories/categoriesCard";
+
+export default async function CategoriesPage() {
+  const categories = await getCategories();
+
+  return (
+    <CategoriesClient>
+      <CategoriesCard categories={categories || []} />
+    </CategoriesClient>
+  );
 }

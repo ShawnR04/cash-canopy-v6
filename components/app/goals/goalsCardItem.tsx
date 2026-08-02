@@ -154,24 +154,25 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
+      <div className="relative h-full" ref={menuRef}>
         <div
-          className="card cursor-pointer"
+          className="card cursor-pointer h-full flex flex-col justify-between"
           onClick={(e) => {
             e.stopPropagation();
             setIsMenuOpen((prev) => !prev);
           }}
         >
-          <div className="flex gap-2">
+          {/* Top Section */}
+          <div className="flex gap-2 items-start justify-between">
             <div className="w-1/2">
-              <h1 className="text-lg font-semibold tracking-tight capitalize">
+              <h1 className="text-lg font-semibold tracking-tight capitalize line-clamp-2">
                 {goal.name}
               </h1>
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground mt-0.5">
                 Target: {sign}{targetAmount.toFixed(2)}
               </p>
             </div>
-            <div className="w-1/2 flex flex-col gap-2 items-end justify-center">
+            <div className="w-1/2 flex flex-col gap-1.5 items-end justify-start">
               <button
                 onClick={handleStatusToggle}
                 disabled={isPending || isTargetReached}
@@ -187,31 +188,34 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
             </div>
           </div>
 
-          <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden my-2">
-            <div
-              className={`h-full transition-all duration-300 ease-out rounded-full ${
-                progressBarStyles[effectiveStatus] || progressBarStyles.active
-              }`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          {/* Middle & Bottom Section */}
+          <div className="mt-4 space-y-2">
+            <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ease-out rounded-full ${
+                  progressBarStyles[effectiveStatus] || progressBarStyles.active
+                }`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
 
-          <div className="flex gap-2">
-            <div className="w-1/2">
-              <h1 className="font-medium text-[14px]">
-                Saved: {sign}{currentAmount.toFixed(2)}
-              </h1>
-              <p className="text-[14px] text-muted-foreground">
-                ({progress.toFixed(0)}%)
+            <div className="flex gap-2 items-end justify-between pt-1">
+              <div className="w-1/2">
+                <h1 className="font-medium text-[14px]">
+                  Saved: {sign}{currentAmount.toFixed(2)}
+                </h1>
+                <p className="text-[14px] text-muted-foreground">
+                  ({progress.toFixed(0)}%)
+                </p>
+              </div>
+              <p className="w-1/2 text-[14px] text-muted-foreground flex items-center justify-end">
+                {formattedDate}
               </p>
             </div>
-            <p className="w-1/2 text-[14px] text-muted-foreground flex items-center justify-end">
-              {formattedDate}
-            </p>
           </div>
         </div>
 
-        {/* --- Dropdown Menu Overlay --- */}
+        {/* Dropdown Menu Overlay */}
         {isMenuOpen && (
           <div
             className="absolute z-50 top-12 right-0 w-40 rounded-xl border border-border bg-popover p-1.5 shadow-lg animate-in fade-in-0 zoom-in-95"
