@@ -11,7 +11,7 @@ interface TransactionsClientProps {
 }
 
 export default function TransactionsClient({ transactions }: TransactionsClientProps){
-    const [isOpen, setIsOpen] = useState(!false);
+    const [isOpen, setIsOpen] = useState(false);
     return(
         <>
             <div className="h-full overflow-y-auto no-scrollbar">

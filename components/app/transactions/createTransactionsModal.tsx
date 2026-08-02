@@ -122,16 +122,21 @@ export default function CreateTransactionsModal({
         ? new Date(`${formData.date}T00:00:00`).toISOString()
         : new Date().toISOString();
 
-      // 2. Pass a plain JS object directly to the Server Action (DO NOT use FormData)
+      // 2. Parse ID strings to numeric values or null
+      const categoryId = formData.categoryId ? Number(formData.categoryId) : null;
+      const budgetId = formData.budgetId ? Number(formData.budgetId) : null;
+      const goalId = formData.goalId ? Number(formData.goalId) : null;
+
+      // 3. Pass a plain JS object directly to the Server Action
       const result = await createTransaction({
         date: validDate,
         description: formData.description,
         amount: formData.amount,
         currency: formData.currency || "USD",
         type: formData.type,
-        categoryId: formData.categoryId || null,
-        budgetId: formData.budgetId || null,
-        goalId: formData.goalId || null,
+        categoryId,
+        budgetId,
+        goalId,
       });
 
       if (result?.success) {
@@ -347,18 +352,17 @@ export default function CreateTransactionsModal({
                     Category
                   </Label>
                   <Label
-                        className={`isfilled-badge ${
-                          fieldStatus.categoryId
-                          ? "badge-success"
-                          : "badge-destructive"
-                        }`}
-                      >
-                        {fieldStatus.categoryId ? 
-                    (
-                        <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                      ) : (
-                        <Asterisk className="w-4 h-4" />
-                      )}
+                    className={`isfilled-badge ${
+                      fieldStatus.categoryId
+                        ? "badge-success"
+                        : "badge-destructive"
+                    }`}
+                  >
+                    {fieldStatus.categoryId ? (
+                      <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : (
+                      <Asterisk className="w-4 h-4" />
+                    )}
                   </Label>
                 </div>
                 <Select
@@ -389,18 +393,17 @@ export default function CreateTransactionsModal({
                     Budget
                   </Label>
                   <Label
-                        className={`isfilled-badge ${
-                          fieldStatus.budgetId
-                          ? "badge-success"
-                          : "badge-destructive"
-                        }`}
-                      >
-                        {fieldStatus.budgetId ? 
-                    (
-                        <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                      ) : (
-                        <Asterisk className="w-4 h-4" />
-                      )}
+                    className={`isfilled-badge ${
+                      fieldStatus.budgetId
+                        ? "badge-success"
+                        : "badge-destructive"
+                    }`}
+                  >
+                    {fieldStatus.budgetId ? (
+                      <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : (
+                      <Asterisk className="w-4 h-4" />
+                    )}
                   </Label>
                 </div>
                 <Select
@@ -429,18 +432,17 @@ export default function CreateTransactionsModal({
                     Goal
                   </Label>
                   <Label
-                        className={`isfilled-badge ${
-                          fieldStatus.goalId
-                          ? "badge-success"
-                          : "badge-destructive"
-                        }`}
-                      >
-                        {fieldStatus.goalId ? 
-                    (
-                        <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                      ) : (
-                        <Asterisk className="w-4 h-4" />
-                      )}
+                    className={`isfilled-badge ${
+                      fieldStatus.goalId
+                        ? "badge-success"
+                        : "badge-destructive"
+                    }`}
+                  >
+                    {fieldStatus.goalId ? (
+                      <BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : (
+                      <Asterisk className="w-4 h-4" />
+                    )}
                   </Label>
                 </div>
                 <Select
