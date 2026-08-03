@@ -227,7 +227,7 @@ export default function DashboardCharts({
                   borderRadius: "12px",
                   color: "#ffffff"
                 }}
-                itemStyle={{ color: "#ffffff" }}
+                itemStyle={{ color: "#008cea" }}
                 labelStyle={{ color: "#ffffff", fontWeight: "bold" }}
               />
               <Bar dataKey="amount" radius={[6, 6, 0, 0]}>

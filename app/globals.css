@@ -104,7 +104,7 @@
   /* Sidebar Colors */
   --sidebar: oklch(1 0 0); 
   --sidebar-foreground: oklch(0.14 0.02 245); 
-  --sidebar-primary: oklch(0.62 0.18 245); 
+  --sidebar-primary: oklch(0.62 0.18 245);
   --sidebar-border: oklch(0.90 0.01 245); 
   --sidebar-ring: oklch(0.62 0.18 245);
 }
