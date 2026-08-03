@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { ArrowLeftRight, Boxes, LayoutDashboard, Menu, Target, TrendingUp, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import AccountSwitcher from "./accountSwitcher";
 
 interface SidenavProps{
     username:string;
@@ -63,17 +64,23 @@ export default function SideNav({
                     </span>
                   </div>
                 </div>
+
+                <div className="">
+                  <AccountSwitcher/>
+                </div>
             </div>
 
             {/* Desktop */}
-            <div className="hidden w-full md:flex md:items-center md:justify-between pl-55">Desktop topnav</div>
+            <div className="hidden w-full md:flex md:items-center md:justify-end pl-55">
+              <AccountSwitcher/>
+            </div>
         </div>
 
         {/* Overlay */}
         {isOpen && (
           <div 
             onClick={() => setIsOpen(false)}
-            className="fixed bg-card/50 inset-0 backdrop-blur-[2px] md:hidden transition-opacity"></div>
+            className="fixed bg-card/50 inset-0 backdrop-blur-[2px] md:hidden transition-opacity z-9"></div>
         )}
         
         {/* SideNav */}
