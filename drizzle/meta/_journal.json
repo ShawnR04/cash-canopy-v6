@@ -43,6 +43,13 @@
       "when": 1785667365004,
       "tag": "0005_unknown_iron_lad",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785686553128,
+      "tag": "0006_boring_xorn",
+      "breakpoints": true
     }
   ]
 }

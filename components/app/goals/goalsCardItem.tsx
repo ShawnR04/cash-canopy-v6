@@ -3,7 +3,7 @@
 import { updateGoalStatus, deleteGoal } from "@/app/actions/goals";
 import { useState, useTransition, useEffect, useRef } from "react";
 import UpdateGoalsModal from "./updateGoalsModal";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Goal {
@@ -22,6 +22,7 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
   const [isPending, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -36,22 +37,28 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle Delete Action
-  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Handle Confirmed Delete Action with 1.5s Minimum Loader Duration
+  const confirmDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const formData = new FormData();
-    formData.append("id", String(goal.id));
     setIsDeleting(true);
 
-    const result = await deleteGoal(formData);
+    const formData = new FormData();
+    formData.append("id", String(goal.id));
+
+    // Guarantee minimum duration of 1500ms
+    const timerPromise = new Promise((resolve) => setTimeout(resolve, 2000));
+    const deletePromise = deleteGoal(formData);
+
+    const [_, result] = await Promise.all([timerPromise, deletePromise]);
+
     if (result?.success) {
       toast.success(`${goal.name} deleted successfully!`);
+      setShowDeleteConfirm(false);
       setIsMenuOpen(false);
-      setIsDeleting(false);
     } else {
       toast.error(result?.error || "Failed to delete goal.");
-      setIsDeleting(false);
     }
+    setIsDeleting(false);
   };
 
   // 1. Progress Metrics
@@ -156,10 +163,12 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
     <>
       <div className="relative h-full" ref={menuRef}>
         <div
-          className="card cursor-pointer h-full flex flex-col justify-between"
+          className="card cursor-pointer h-full flex flex-col justify-between relative overflow-hidden"
           onClick={(e) => {
             e.stopPropagation();
-            setIsMenuOpen((prev) => !prev);
+            if (!showDeleteConfirm) {
+              setIsMenuOpen((prev) => !prev);
+            }
           }}
         >
           {/* Top Section */}
@@ -213,10 +222,60 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
               </p>
             </div>
           </div>
+
+          {/* ================= DELETE CONFIRMATION CARD OVERLAY ================= */}
+          {showDeleteConfirm && (
+            <div
+              className="absolute inset-0 z-40 bg-background/95 backdrop-blur-sm p-4 flex flex-col justify-between items-center text-center animate-in fade-in zoom-in-95 duration-150"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col items-center gap-1.5 mt-1">
+                <div className="w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Delete &quot;{goal.name}&quot;?
+                </h3>
+                <p className="text-xs text-muted-foreground leading-tight px-2">
+                  Are you sure? All associated goal transactions will also be permanently deleted.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 w-full mt-2">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(false);
+                  }}
+                  className="w-1/2 h-9 text-xs font-medium border border-input rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={confirmDelete}
+                  className="w-1/2 h-9 text-xs font-medium bg-destructive text-destructive-foreground rounded-xl hover:bg-destructive/90 transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Dropdown Menu Overlay */}
-        {isMenuOpen && (
+        {isMenuOpen && !showDeleteConfirm && (
           <div
             className="absolute z-50 top-12 right-0 w-40 rounded-xl border border-border bg-popover p-1.5 shadow-lg animate-in fade-in-0 zoom-in-95"
             onClick={(e) => e.stopPropagation()}
@@ -235,12 +294,14 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
 
             <button
               type="button"
-              disabled={isDeleting}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50"
-              onClick={handleDelete}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+              onClick={() => {
+                setIsMenuOpen(false);
+                setShowDeleteConfirm(true);
+              }}
             >
               <Trash2 className="w-4 h-4" />
-              {isDeleting ? "Deleting..." : "Delete"}
+              Delete
             </button>
           </div>
         )}

@@ -3,7 +3,7 @@
 import { DynamicIcon } from "@/lib/dynamicIcon";
 import React, { useState, useEffect, useRef } from "react";
 import UpdateBudgetsModal from "./updateBudgetsModal";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { deleteBudget } from "@/app/actions/budgets";
 import { toast } from "sonner";
 import { CategoryOption } from "./createBudgetsModal";
@@ -34,6 +34,7 @@ export default function BudgetsCardItem({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -47,18 +48,19 @@ export default function BudgetsCardItem({
     spentAmount = 0,
   } = budget;
 
-  // Close dropdown when user clicks outside
+  // Close menus when user clicks outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
+        if (!isDeleting) {
+          setShowDeleteConfirm(false);
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  
+  }, [isDeleting]);
 
   const budgetAmount = Number(amount) || 0;
   const remaining = budgetAmount - spentAmount;
@@ -88,23 +90,29 @@ export default function BudgetsCardItem({
       maximumFractionDigits: 2,
     }).format(val);
 
-  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Stop form triggers
-        
-    const formData = new FormData();
-    formData.append("id", String(budget.id));
+  // Handle Confirmed Delete Action with 2.0s Minimum Loader Duration
+  const confirmDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsDeleting(true);
 
-    const result = await deleteBudget(formData);
-      if (result?.success) {
-          toast.success(`${budget.name} deleted successfully!`);
-          setIsMenuOpen(false);
-          setIsDeleting(false);
-        } else {
-          toast.error(result?.error || "Something went wrong.");
-          setIsDeleting(false);
-        }
-      };
+    const formData = new FormData();
+    formData.append("id", String(budget.id));
+
+    // Guarantee minimum duration of 2000ms (2 seconds)
+    const timerPromise = new Promise((resolve) => setTimeout(resolve, 2000));
+    const deletePromise = deleteBudget(formData);
+
+    const [_, result] = await Promise.all([timerPromise, deletePromise]);
+
+    if (result?.success) {
+      toast.success(`${budget.name} deleted successfully!`);
+      setShowDeleteConfirm(false);
+      setIsMenuOpen(false);
+    } else {
+      toast.error(result?.error || "Something went wrong.");
+    }
+    setIsDeleting(false);
+  };
 
   return (
     <>
@@ -113,7 +121,9 @@ export default function BudgetsCardItem({
           className="card cursor-pointer shadow-xs rounded-2xl border border-border bg-card p-4 text-card-foreground transition-all hover:shadow-md space-y-3"
           onClick={(e) => {
             e.stopPropagation();
-            setIsMenuOpen((prev) => !prev);
+            if (!showDeleteConfirm) {
+              setIsMenuOpen((prev) => !prev);
+            }
           }}
         >
           {/* Header */}
@@ -202,8 +212,8 @@ export default function BudgetsCardItem({
           </div>
         </div>
 
-        {/* Dropdown Menu Overlay */}
-        {isMenuOpen && (
+        {/* Dropdown Menu Options */}
+        {isMenuOpen && !showDeleteConfirm && (
           <div
             className="absolute z-50 top-12 right-0 w-40 rounded-xl border border-border bg-popover p-1.5 shadow-lg animate-in fade-in-0 zoom-in-95"
             onClick={(e) => e.stopPropagation()}
@@ -222,13 +232,67 @@ export default function BudgetsCardItem({
 
             <button
               type="button"
-              disabled={isDeleting}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer disabled:opacity-50"
-              onClick={handleDelete}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+              onClick={() => {
+                setIsMenuOpen(false);
+                setShowDeleteConfirm(true);
+              }}
             >
               <Trash2 className="w-4 h-4" />
-              {isDeleting ? "Deleting..." : "Delete"}
+              Delete
             </button>
+          </div>
+        )}
+
+        {/* ================= DELETE CONFIRMATION POPOVER ================= */}
+        {showDeleteConfirm && (
+          <div
+            className="absolute z-50 top-12 right-0 w-64 rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-4 shadow-xl animate-in fade-in-0 zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0 mt-0.5">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-popover-foreground">
+                  Delete &quot;{budget.name}&quot;?
+                </h4>
+                <p className="text-[11px] text-muted-foreground leading-tight">
+                  This will also permanently remove all linked budget transactions.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/60">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(false);
+                }}
+                className="w-1/2 h-8 text-xs font-medium border border-input rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={confirmDelete}
+                className="w-1/2 h-8 text-xs font-medium bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
