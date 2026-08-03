@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useState } from "react";
 import AccountSwitcher from "./accountSwitcher";
 import LogoutButton from "./logoutBtn";
+import ExportData from "./exportData";
 
 interface SidenavProps{
     username:string;
@@ -142,7 +143,9 @@ export default function SideNav({
 
               {/* Export Data */}
               {/* TODO: Make export data button */}
-              <div className=""></div>
+              <div className="flex items-center justify-center">
+                <ExportData/>
+              </div>
 
               {/* CTA Buttons */}
               {/* TODO: Make settings and logout button */}
