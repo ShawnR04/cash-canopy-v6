@@ -5,6 +5,7 @@ import { ArrowLeftRight, Boxes, LayoutDashboard, Menu, Target, TrendingUp, Walle
 import Image from "next/image";
 import { useState } from "react";
 import AccountSwitcher from "./accountSwitcher";
+import LogoutButton from "./logoutBtn";
 
 interface SidenavProps{
     username:string;
@@ -145,7 +146,9 @@ export default function SideNav({
 
               {/* CTA Buttons */}
               {/* TODO: Make settings and logout button */}
-              <div className="flex items-center justify-around"></div>
+              <div className="h-10 flex items-center justify-around">
+                <LogoutButton/>
+              </div>
 
               {/* Version */}
               <div className="h-5 flex items-center justify-center">
