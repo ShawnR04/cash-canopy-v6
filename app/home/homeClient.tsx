@@ -1,21 +1,26 @@
-"use client"
+"use client";
 
-import Sidenav from '@/components/app/home/sidenav';
-import React, { useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation';
+import Sidenav from "@/components/app/home/sidenav";
+import React, { useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-interface HomeProps{
-  username:string,
-  version:string,
+interface HomeProps {
+  username: string;
+  email?: string;
+  userImage?: string | null;
+  version: string;
   dashboardTab: React.ReactNode;
   transactionsTab: React.ReactNode;
   budgetsTab: React.ReactNode;
-  categoriesTab: React.ReactNode; // Correctly mapped
+  categoriesTab: React.ReactNode;
   reportTab: React.ReactNode;
   goalsTab: React.ReactNode;
 }
+
 export default function HomeClient({
   username,
+  email,
+  userImage,
   version,
   dashboardTab,
   transactionsTab,
@@ -23,9 +28,9 @@ export default function HomeClient({
   categoriesTab,
   reportTab,
   goalsTab,
-} : HomeProps) {
+}: HomeProps) {
   const router = useRouter();
-  const searchParams = useSearchParams(); // Requires <Suspense> above it
+  const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
   // Read the tab from the URL search params (?tab=...)
@@ -35,7 +40,7 @@ export default function HomeClient({
   const setActiveTab = (newTab: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", newTab);
-    
+
     startTransition(() => {
       router.push(`?${params.toString()}`, { scroll: false });
     });
@@ -43,15 +48,23 @@ export default function HomeClient({
 
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": return dashboardTab;
-      case "transactions" : return transactionsTab;
-      case "budgets": return budgetsTab;
-      case "categories": return categoriesTab;
-      case "report": return reportTab;
-      case "goals": return goalsTab;
-      default:return dashboardTab;
+      case "dashboard":
+        return dashboardTab;
+      case "transactions":
+        return transactionsTab;
+      case "budgets":
+        return budgetsTab;
+      case "categories":
+        return categoriesTab;
+      case "report":
+        return reportTab;
+      case "goals":
+        return goalsTab;
+      default:
+        return dashboardTab;
     }
-  }
+  };
+
   return (
     <>
       <div className="h-dvh flex flex-col md:flex-row">
@@ -59,6 +72,8 @@ export default function HomeClient({
         <div className="w-full md:w-auto shrink-0">
           <Sidenav
             username={username}
+            email={email}
+            userImage={userImage}
             version={version}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -67,11 +82,11 @@ export default function HomeClient({
 
         {/* Content */}
         <div className="w-full h-full flex flex-col pt-15 md:pl-55 transition-all duration-300 ease-in-out">
-            <main className="w-full flex-1 overflow-y-auto no-scrollbar p-2 md:px-3">
-              {renderContent()}
-            </main>
-          </div>
+          <main className="w-full flex-1 overflow-y-auto no-scrollbar p-2 md:px-3">
+            {renderContent()}
+          </main>
+        </div>
       </div>
     </>
-  )
+  );
 }

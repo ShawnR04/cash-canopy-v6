@@ -10,27 +10,30 @@ import Categories from "../pages/categories/page";
 import Report from "../pages/report/page";
 import Goals from "../pages/goals/page";
 
-export default async function Home(){
-    const session = await getSession();
+export default async function Home() {
+  const session = await getSession();
 
-    if(!session){
-        return redirect("/auth/login")
-    }
+  if (!session) {
+    return redirect("/auth/login");
+  }
 
-    const username = session?.user?.username || session?.user?.name || "User";
-    const version = "6.0.0"
-    return(
-        <>
-            <HomeClient
-                username={username}
-                version={version}
-                dashboardTab={<Dashboard/>}
-                transactionsTab={<Transactions/>}
-                budgetsTab={<Budgets/>}
-                categoriesTab={<Categories/>}
-                reportTab={<Report/>}
-                goalsTab={<Goals/>}
-            />
-        </>
-    );
+  const username = session?.user?.username || session?.user?.name || "User";
+  const email = session?.user?.email;
+  const userImage = session?.user?.image;
+  const version = "6.0.0";
+
+  return (
+    <HomeClient
+      username={username}
+      email={email}
+      userImage={userImage}
+      version={version}
+      dashboardTab={<Dashboard />}
+      transactionsTab={<Transactions />}
+      budgetsTab={<Budgets />}
+      categoriesTab={<Categories />}
+      reportTab={<Report />}
+      goalsTab={<Goals />}
+    />
+  );
 }
