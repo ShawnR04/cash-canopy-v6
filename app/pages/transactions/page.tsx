@@ -24,7 +24,10 @@ export default async function Transactions() {
 
   return (
     <TransactionsClient transactions={options}>
-      <TransactionTableView initialTransactions={transactions || []} />
+      <TransactionTableView 
+        initialTransactions={transactions || []} 
+        options={options} 
+      />
     </TransactionsClient>
   );
 }

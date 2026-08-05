@@ -1,6 +1,5 @@
 "use client";
 
-// TODO:: Add the functionality to update transactions
 import { Asterisk, BadgeCheck, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -24,9 +23,9 @@ interface OptionItem {
 }
 
 export interface TransactionOption {
-  categories: OptionItem[];
-  budgets: OptionItem[];
-  goals: OptionItem[];
+  categories?: OptionItem[];
+  budgets?: OptionItem[];
+  goals?: OptionItem[];
 }
 
 export interface TransactionToEdit {
@@ -44,14 +43,14 @@ export interface TransactionToEdit {
 interface UpdateModalProps {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
-  options: TransactionOption;
+  options?: TransactionOption;
   transaction: TransactionToEdit | null;
 }
 
 export default function UpdateTransactionModal({
   isOpen,
   setIsOpen,
-  options,
+  options = { categories: [], budgets: [], goals: [] },
   transaction,
 }: UpdateModalProps) {
   const router = useRouter();
@@ -118,18 +117,21 @@ export default function UpdateTransactionModal({
     field: keyof TransactionFormData,
     value: string
   ) => {
+    // Treat "none" as empty string for DB clearing
+    const actualValue = value === "none" ? "" : value;
+
     setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
+      const updated = { ...prev, [field]: actualValue };
 
       // Mutual Exclusivity Safeguards
-      if (field === "budgetId" && value) {
+      if (field === "budgetId" && actualValue) {
         updated.categoryId = "";
         updated.goalId = "";
-      } else if (field === "goalId" && value) {
+      } else if (field === "goalId" && actualValue) {
         updated.categoryId = "";
         updated.budgetId = "";
         updated.type = "Expense";
-      } else if (field === "categoryId" && value) {
+      } else if (field === "categoryId" && actualValue) {
         updated.budgetId = "";
         updated.goalId = "";
       }
@@ -158,7 +160,6 @@ export default function UpdateTransactionModal({
     setIsSubmitting(true);
 
     try {
-      // Build FormData expected by updateTransaction Server Action
       const payload = new FormData();
       payload.append("id", formData.id);
       payload.append("description", formData.description);
@@ -281,7 +282,7 @@ export default function UpdateTransactionModal({
               </div>
               <Select
                 value={formData.currency}
-                onValueChange={(value) => handleSelectChange("currency", value ?? "")}
+                onValueChange={(value) => handleSelectChange("currency", value)}
               >
                 <SelectTrigger className="w-full h-11">
                   <SelectValue placeholder="Select Currency..." />
@@ -384,14 +385,14 @@ export default function UpdateTransactionModal({
               </div>
               <Select
                 disabled={hasBudget || hasGoal}
-                value={formData.categoryId}
-                onValueChange={(val) => handleSelectChange("categoryId", val ?? "")}
+                value={formData.categoryId || "none"}
+                onValueChange={(val) => handleSelectChange("categoryId", val)}
               >
                 <SelectTrigger className="w-full h-11">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {options?.categories?.map((cat) => (
                     <SelectItem key={cat.id} value={String(cat.id)}>
                       {cat.name}
@@ -419,14 +420,14 @@ export default function UpdateTransactionModal({
               </div>
               <Select
                 disabled={hasCategory || hasGoal}
-                value={formData.budgetId}
-                onValueChange={(val) => handleSelectChange("budgetId", val ?? "")}
+                value={formData.budgetId || "none"}
+                onValueChange={(val) => handleSelectChange("budgetId", val)}
               >
                 <SelectTrigger className="w-full h-11">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {options?.budgets?.map((b) => (
                     <SelectItem key={b.id} value={String(b.id)}>
                       {b.name}
@@ -454,14 +455,14 @@ export default function UpdateTransactionModal({
               </div>
               <Select
                 disabled={hasCategory || hasBudget}
-                value={formData.goalId}
-                onValueChange={(val) => handleSelectChange("goalId", val ?? "")}
+                value={formData.goalId || "none"}
+                onValueChange={(val) => handleSelectChange("goalId", val)}
               >
                 <SelectTrigger className="w-full h-11">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {options?.goals?.map((g) => (
                     <SelectItem key={g.id} value={String(g.id)}>
                       {g.name}

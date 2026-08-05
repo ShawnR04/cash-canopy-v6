@@ -48,6 +48,38 @@ async function updateNetBalance(
 }
 
 /* ==========================================================================
+   GET TRANSACTION OPTIONS (CATEGORIES, BUDGETS, GOALS)
+   ========================================================================== */
+export async function getTransactionOptions() {
+  try {
+    const userId = await getAuthenticatedUser();
+    if (!userId) {
+      return { categories: [], budgets: [], goals: [] };
+    }
+
+    const [categories, budgets, goals] = await Promise.all([
+      db
+        .select({ id: categoriesTable.id, name: categoriesTable.name })
+        .from(categoriesTable)
+        .where(eq(categoriesTable.userId, userId)),
+      db
+        .select({ id: budgetsTable.id, name: budgetsTable.name })
+        .from(budgetsTable)
+        .where(eq(budgetsTable.userId, userId)),
+      db
+        .select({ id: goalsTable.id, name: goalsTable.name })
+        .from(goalsTable)
+        .where(eq(goalsTable.userId, userId)),
+    ]);
+
+    return { categories, budgets, goals };
+  } catch (error) {
+    console.error("Failed to fetch transaction options:", error);
+    return { categories: [], budgets: [], goals: [] };
+  }
+}
+
+/* ==========================================================================
    CREATE TRANSACTION
    ========================================================================== */
 export async function createTransaction(data: CreateTransactionInput): Promise<{ success: boolean; error?: string | null }> {
@@ -139,9 +171,9 @@ export async function updateTransaction(formData: FormData) {
       return { success: false, error: "Required fields are missing." };
     }
 
-    const categoryId = rawCategoryId ? parseInt(rawCategoryId, 10) : null;
-    const budgetId = rawBudgetId ? parseInt(rawBudgetId, 10) : null;
-    const newGoalId = rawGoalId ? parseInt(rawGoalId, 10) : null;
+    const categoryId = rawCategoryId && rawCategoryId !== "none" ? parseInt(rawCategoryId, 10) : null;
+    const budgetId = rawBudgetId && rawBudgetId !== "none" ? parseInt(rawBudgetId, 10) : null;
+    const newGoalId = rawGoalId && rawGoalId !== "none" ? parseInt(rawGoalId, 10) : null;
 
     const validTypes: TransactionType[] = ["Income", "Expense"];
     const initialType = validTypes.includes(rawType) ? rawType : "Expense";
@@ -180,9 +212,9 @@ export async function updateTransaction(formData: FormData) {
         type: finalType,
         currency,
         date: rawDate ? new Date(rawDate) : new Date(),
-        categoryId: isNaN(categoryId!) ? null : categoryId,
-        budgetId: isNaN(budgetId!) ? null : budgetId,
-        goalId: isNaN(newGoalId!) ? null : newGoalId,
+        categoryId: categoryId && !isNaN(categoryId) ? categoryId : null,
+        budgetId: budgetId && !isNaN(budgetId) ? budgetId : null,
+        goalId: newGoalId && !isNaN(newGoalId) ? newGoalId : null,
         updatedAt: new Date(),
       })
       .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)));
@@ -239,18 +271,29 @@ export async function updateTransaction(formData: FormData) {
 }
 
 /* ==========================================================================
-   DELETE TRANSACTION (FormData)
+   DELETE TRANSACTION (Supports number OR FormData)
    ========================================================================== */
-export async function deleteTransaction(formData: FormData) {
+export async function deleteTransaction(input: number | FormData) {
   try {
     const userId = await getAuthenticatedUser();
-
-    const rawId = formData.get("id");
-    if (!rawId) {
-      return { success: false, error: "Transaction ID is missing." };
+    if (!userId) {
+      return { success: false, error: "Unauthorized." };
     }
 
-    const id = parseInt(rawId as string, 10);
+    // Extract ID dynamically based on input type
+    let id: number;
+    if (typeof input === "number") {
+      id = input;
+    } else if (input instanceof FormData) {
+      const rawId = input.get("id");
+      if (!rawId) {
+        return { success: false, error: "Transaction ID is missing." };
+      }
+      id = parseInt(rawId as string, 10);
+    } else {
+      return { success: false, error: "Invalid input provided." };
+    }
+
     if (isNaN(id)) {
       return { success: false, error: "Invalid transaction ID." };
     }

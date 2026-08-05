@@ -3,15 +3,18 @@
 import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import TransactionsTable, { Transaction } from './transactionsTable';
+import { TransactionOption } from './updateTransactions';
 
 interface TransactionTableViewProps {
   initialTransactions?: Transaction[];
+  options?: TransactionOption;
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
 }
 
 export default function TransactionTableView({ 
   initialTransactions = [], 
+  options,
   onEdit, 
   onDelete 
 }: TransactionTableViewProps) {
@@ -23,7 +26,6 @@ export default function TransactionTableView({
     if (!initialTransactions || initialTransactions.length === 0) return [];
 
     return initialTransactions.filter((t) => {
-      // Resolve classification name (Category, Budget, or Goal)
       const classificationName = 
         t.category?.name || 
         t.budget?.name || 
@@ -32,13 +34,11 @@ export default function TransactionTableView({
 
       const query = searchQuery.toLowerCase().trim();
 
-      // 1. Search Matches Description, Amount, or Classification
       const matchesSearch =
         t.description.toLowerCase().includes(query) ||
         String(t.amount).includes(query) ||
         classificationName.toLowerCase().includes(query);
 
-      // 2. Type Filter Matches "all", "Income", or "Expense"
       const matchesType =
         typeFilter === "all" ? true : t.type === typeFilter;
 
@@ -47,9 +47,11 @@ export default function TransactionTableView({
   }, [initialTransactions, searchQuery, typeFilter]);
 
   if (!initialTransactions || initialTransactions.length === 0) {
-    return <div className="col-span-full py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
-              No transactions found. Click &apos;Add Transaction&apos; to create one!
-        </div>
+    return (
+      <div className="col-span-full py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
+        No transactions found. Click &apos;Add Transaction&apos; to create one!
+      </div>
+    );
   }
 
   return (
@@ -94,12 +96,13 @@ export default function TransactionTableView({
       {filteredTransactions.length > 0 ? (
         <TransactionsTable 
           transactions={filteredTransactions} 
+          options={options}
           onEdit={onEdit} 
           onDelete={onDelete} 
         />
       ) : (
         <div className="col-span-full py-12 text-center text-xs text-muted-foreground bg-[#0a0f1d] border border-border rounded-2xl">
-              No transactions found. Click &apos;Add Transaction&apos; to create one!
+          No transactions found. Click &apos;Add Transaction&apos; to create one!
         </div>
       )}
     </div>
