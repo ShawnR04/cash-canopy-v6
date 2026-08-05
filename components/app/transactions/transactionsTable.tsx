@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useTransition, useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { 
   Pencil, 
   Trash2, 
   MoreVertical, 
   Folder, 
   PiggyBank, 
-  Target,
-  Loader2
+  Target 
 } from 'lucide-react';
 import { DynamicIcon } from '@/lib/dynamicIcon';
-import { deleteTransaction } from '@/app/actions/transactions';
-import { toast } from 'sonner';
+// Dynamic icon import from Lucide
 
 export interface Transaction {
   id: number;
@@ -33,22 +31,6 @@ interface TransactionsTableProps {
 }
 
 export default function TransactionsTable({ transactions, onEdit, onDelete }: TransactionsTableProps) {
-  const [isPending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  // Close active dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setActiveMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Safe date formatting
   const formatDate = (dateStr: Date | string) => {
     if (!dateStr) return '';
@@ -71,86 +53,66 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
     return `${prefix}${symbol}${num}`;
   };
 
-  // Delete Handler
-  const handleDelete = (id: number, description: string) => {
-    setActiveMenuId(null);
-
-    if (onDelete) {
-      onDelete(id);
-      return;
-    }
-
-    setDeletingId(id);
-
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("id", String(id));
-
-      const result = await deleteTransaction(formData);
-
-      if (result?.success) {
-        toast.success(`"${description}" deleted successfully!`);
-      } else {
-        toast.error(result?.error || "Failed to delete transaction.");
-      }
-
-      setDeletingId(null);
-    });
-  };
-
   /**
-   * Safe Renderer for Dynamic Icons
+   * Safe Renderer for Dynamic Icons:
+   * Handles Lucide string names (e.g. "shopping-bag", "utensils"), Emojis, or React components
    */
   const renderDynamicIcon = (icon?: string | React.ReactNode, fallbackIcon: React.ReactNode = <Folder size={14} />) => {
     if (!icon) return fallbackIcon;
 
     if (typeof icon === 'string') {
+      // 1. Check if string is an emoji or single character
       if (/\p{Extended_Pictographic}/u.test(icon)) {
         return <span className="text-xs leading-none">{icon}</span>;
       }
 
+      // 2. Format string to lower-kebab-case for Lucide DynamicIcon matching (e.g. "ShoppingBag" -> "shopping-bag")
       const formattedName = icon
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
         .toLowerCase() as any;
 
-      return <DynamicIcon name={formattedName} />;
+      return (
+        <DynamicIcon
+          name={formattedName} 
+        />
+      );
     }
 
     return icon;
   };
 
-  // Classification helper
+  // Classification helper (resolves Category, Budget, or Goal with color and dynamic icon)
   const getClassification = (t: Transaction) => {
     if (t.category && t.category.name) {
       return {
         name: t.category.name,
         icon: renderDynamicIcon(t.category.icon, <Folder size={14} />),
-        color: t.category.color || '#14b8a6',
+        color: t.category.color || '#14b8a6', // Teal fallback
       };
     }
     if (t.budget && t.budget.name) {
       return {
         name: t.budget.name,
-        icon: <PiggyBank size={14} />,
-        color: t.budget.color || '#3b82f6',
+        icon: renderDynamicIcon(t.category?.icon, <PiggyBank size={14} />),
+        color: t.budget.color || '#3b82f6', // Blue fallback
       };
     }
     if (t.goal && t.goal.name) {
       return {
         name: t.goal.name,
-        icon: <Target size={14} />,
-        color: t.goal.color || '#8b5cf6',
+        icon: renderDynamicIcon(t.category?.icon, <Target size={14} />),
+        color: t.goal.color || '#8b5cf6', // Purple fallback
       };
     }
     return {
       name: 'Uncategorized',
       icon: <Folder size={14} />,
-      color: '#64748b',
+      color: '#64748b', // Slate fallback
     };
   };
 
   return (
-    <div className="w-full bg-[#030712] text-slate-100 rounded-lg shadow-xl border border-slate-800">
+    <div className="w-full bg-[#030712] text-slate-100 rounded-lg overflow-hidden shadow-xl border border-slate-800">
       
       {/* ================= DESKTOP TABLE VIEW (md and up) ================= */}
       <div className="hidden md:block overflow-x-auto">
@@ -168,7 +130,6 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
           <tbody className="divide-y divide-slate-800/60">
             {transactions.map((t) => {
               const classification = getClassification(t);
-              const isDeletingThis = isPending && deletingId === t.id;
 
               return (
                 <tr key={t.id} className="hover:bg-slate-900/50 transition-colors">
@@ -182,7 +143,7 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                     {t.description}
                   </td>
 
-                  {/* Classification */}
+                  {/* Classification with Dynamic Icon & Color */}
                   <td className="py-4 px-6 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
@@ -214,29 +175,22 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                     {formatAmount(t.amount, t.type, t.currency)}
                   </td>
 
-                  {/* Desktop Actions */}
+                  {/* Actions */}
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <button
                         onClick={() => onEdit?.(t.id)}
                         className="text-sky-400 hover:text-sky-300 transition-colors"
                         aria-label="Edit transaction"
-                        disabled={isDeletingThis}
                       >
                         <Pencil size={18} />
                       </button>
-
                       <button
-                        onClick={() => handleDelete(t.id, t.description)}
-                        disabled={isDeletingThis}
-                        className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                        onClick={() => onDelete?.(t.id)}
+                        className="text-red-500 hover:text-red-400 transition-colors"
                         aria-label="Delete transaction"
                       >
-                        {isDeletingThis ? (
-                          <Loader2 size={18} className="animate-spin" />
-                        ) : (
-                          <Trash2 size={18} />
-                        )}
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </td>
@@ -251,13 +205,9 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
       <div className="block md:hidden divide-y divide-slate-800">
         {transactions.map((t) => {
           const classification = getClassification(t);
-          const isDeletingThis = isPending && deletingId === t.id;
-          const isMenuOpen = activeMenuId === t.id;
 
           return (
-            <div key={t.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40 relative">
-              
-              {/* Left Column: Title, Date, Classification Badge */}
+            <div key={t.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40">
               <div className="flex flex-col gap-1 pr-2 overflow-hidden">
                 <h4 className="font-bold text-white text-base truncate">
                   {t.description}
@@ -281,7 +231,6 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                 </div>
               </div>
 
-              {/* Right Column: Amount & Dynamic Action Menu */}
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-right">
                   <div className={`text-xs font-semibold ${
@@ -296,46 +245,14 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                   </div>
                 </div>
 
-                {/* Mobile Menu Trigger & Dropdown */}
-                <div className="relative" ref={isMenuOpen ? menuRef : null}>
-                  <button 
-                    onClick={() => setActiveMenuId(isMenuOpen ? null : t.id)} 
-                    disabled={isDeletingThis}
-                    className="text-slate-400 hover:text-white p-1 disabled:opacity-50"
-                    aria-label="Options"
-                  >
-                    {isDeletingThis ? (
-                      <Loader2 size={18} className="animate-spin text-red-400" />
-                    ) : (
-                      <MoreVertical size={18} />
-                    )}
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-32 bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 py-1">
-                      <button
-                        onClick={() => {
-                          setActiveMenuId(null);
-                          onEdit?.(t.id);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition-colors"
-                      >
-                        <Pencil size={14} className="text-sky-400" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(t.id, t.description)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-400 hover:bg-slate-800 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={() => onEdit?.(t.id)} 
+                  className="text-slate-400 hover:text-white p-1"
+                  aria-label="Options"
+                >
+                  <MoreVertical size={18} />
+                </button>
               </div>
-
             </div>
           );
         })}
