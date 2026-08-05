@@ -16,7 +16,7 @@ export default async function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06090e] text-zinc-100 p-6 space-y-6">
+    <div className="h-full overflow-y-auto no-scrollbar">
       
       {/* Top Header */}
       <div className="open-modal-background">
