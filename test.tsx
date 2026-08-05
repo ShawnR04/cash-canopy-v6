@@ -1,171 +1,196 @@
 "use client";
 
-import React from "react";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Calendar,
-  CreditCard,
-  Tag,
-  Target,
-  Wallet,
-} from "lucide-react";
-import { DynamicIcon } from "@/lib/dynamicIcon";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client"; // Adjust path to your auth client
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User, Mail, Lock, AtSign, Loader2, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
-export interface TransactionItem {
-  id: number;
-  description: string;
-  amount: number | string;
-  currency: string;
-  type: "Income" | "Expense";
-  date: Date | string;
-  category?: { id: number; name: string; icon?: string; color?: string } | null;
-  budget?: { id: number; name: string } | null;
-  goal?: { id: number; name: string } | null;
-}
+export default function SignUpCard() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-interface TransactionsTableProps {
-  transactions?: TransactionItem[];
-  isLoading?: boolean;
-}
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
 
-export default function TransactionsTable({
-  transactions = [],
-  isLoading = false,
-}: TransactionsTableProps) {
-  if (isLoading) {
-    return (
-      <div className="w-full bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-sm">
-        <div className="flex flex-col gap-4 animate-pulse">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 bg-zinc-100 rounded-xl w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-  if (!transactions.length) {
-    return (
-      <div className="w-full bg-white border border-zinc-200/80 rounded-2xl p-12 text-center shadow-sm flex flex-col items-center justify-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
-          <CreditCard className="w-6 h-6" />
-        </div>
-        <h3 className="font-semibold text-zinc-900 text-base">No transactions yet</h3>
-        <p className="text-sm text-zinc-500 max-w-sm">
-          Log a new transaction using the form above to track your spending and income.
-        </p>
-      </div>
-    );
-  }
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const result = await authClient.signUp.email({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password.trim(),
+        name: formData.name.trim(),
+        username: formData.username.trim(),
+      });
+
+      // Better Auth returns an error object rather than throwing
+      if (result.error) {
+        toast.error(result.error.message || "Failed to create account.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      toast.success("Account created successfully!");
+      router.push("/home");
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred during sign up.");
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="w-full bg-white border border-zinc-200/80 rounded-2xl shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 uppercase text-[11px] font-bold tracking-wider">
-              <th className="py-3.5 px-4">Transaction</th>
-              <th className="py-3.5 px-4">Linked To</th>
-              <th className="py-3.5 px-4">Date</th>
-              <th className="py-3.5 px-4 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 text-zinc-700">
-            {transactions.map((tx) => {
-              const isIncome = tx.type === "Income";
-              const formattedDate = new Date(tx.date).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              });
+    <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl shadow-2xl relative overflow-hidden space-y-6">
+      {/* Background Ambient Glow */}
+      <div className="absolute -top-16 -right-16 w-36 h-36 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-              return (
-                <tr
-                  key={tx.id}
-                  className="hover:bg-zinc-50/60 transition-colors group"
-                >
-                  {/* Description & Icon */}
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-sm shrink-0 font-medium ${
-                          isIncome
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-zinc-100 text-zinc-600"
-                        }`}
-                        style={
-                          tx.category?.color
-                            ? { backgroundColor: tx.category.color, color: "#fff" }
-                            : undefined
-                        }
-                      >
-                        {tx.category?.icon ? (
-                          <DynamicIcon name={tx.category.icon} className="w-4 h-4" />
-                        ) : isIncome ? (
-                          <ArrowUpRight className="w-4 h-4 text-emerald-600" />
-                        ) : (
-                          <ArrowDownRight className="w-4 h-4 text-rose-600" />
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-zinc-900 line-clamp-1">
-                          {tx.description}
-                        </span>
-                        <span className="text-[11px] text-zinc-400 font-medium">
-                          {tx.type}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
+      {/* Header */}
+      <div className="text-center space-y-1.5 relative z-10">
+        <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100">
+          Create an Account
+        </h1>
+        <p className="text-xs text-zinc-400">
+          Join CashCanopy to track expenses, budgets, and savings goals
+        </p>
+      </div>
 
-                  {/* Linked Association (Category, Budget, or Goal) */}
-                  <td className="py-3.5 px-4">
-                    {tx.category ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-700">
-                        <Tag className="w-3 h-3 text-zinc-400" />
-                        {tx.category.name}
-                      </span>
-                    ) : tx.budget ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                        <Wallet className="w-3 h-3 text-blue-500" />
-                        {tx.budget.name}
-                      </span>
-                    ) : tx.goal ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
-                        <Target className="w-3 h-3 text-purple-500" />
-                        {tx.goal.name}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-zinc-400 italic">Unlinked</span>
-                    )}
-                  </td>
+      {/* Form */}
+      <form onSubmit={handleSignUp} className="space-y-4 relative z-10">
+        {/* Full Name */}
+        <div className="space-y-1.5">
+          <Label htmlFor="name" className="text-xs font-semibold text-zinc-300">
+            Full Name
+          </Label>
+          <div className="relative">
+            <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              required
+              disabled={isSubmitting}
+              placeholder="Shawn Rimai"
+              value={formData.name}
+              onChange={handleChange}
+              className="h-11 pl-10 bg-[#0e1626] border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-primary rounded-xl text-xs"
+            />
+          </div>
+        </div>
 
-                  {/* Date */}
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                      <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                      {formattedDate}
-                    </div>
-                  </td>
+        {/* Username */}
+        <div className="space-y-1.5">
+          <Label htmlFor="username" className="text-xs font-semibold text-zinc-300">
+            Username
+          </Label>
+          <div className="relative">
+            <AtSign className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              required
+              disabled={isSubmitting}
+              placeholder="shawnrimai"
+              value={formData.username}
+              onChange={handleChange}
+              className="h-11 pl-10 bg-[#0e1626] border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-primary rounded-xl text-xs"
+            />
+          </div>
+        </div>
 
-                  {/* Amount */}
-                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                    <span
-                      className={`font-bold text-sm ${
-                        isIncome ? "text-emerald-600" : "text-zinc-900"
-                      }`}
-                    >
-                      {isIncome ? "+" : "-"}
-                      {tx.currency === "USD" ? "$" : `${tx.currency} `}
-                      {Number(tx.amount).toFixed(2)}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-xs font-semibold text-zinc-300">
+            Email Address
+          </Label>
+          <div className="relative">
+            <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              disabled={isSubmitting}
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              className="h-11 pl-10 bg-[#0e1626] border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-primary rounded-xl text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Password */}
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="text-xs font-semibold text-zinc-300">
+            Password
+          </Label>
+          <div className="relative">
+            <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              disabled={isSubmitting}
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              className="h-11 pl-10 bg-[#0e1626] border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-primary rounded-xl text-xs"
+            />
+          </div>
+          <p className="text-[10px] text-zinc-500 pt-0.5">
+            Must be at least 8 characters long
+          </p>
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            <>
+              Sign Up <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </Button>
+      </form>
+
+      {/* Footer Link */}
+      <div className="text-center border-t border-zinc-800/80 pt-4 relative z-10">
+        <p className="text-xs text-zinc-400">
+          Already have an account?{" "}
+          <Link
+            href="/auth/login"
+            className="text-primary font-semibold hover:underline"
+          >
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );
