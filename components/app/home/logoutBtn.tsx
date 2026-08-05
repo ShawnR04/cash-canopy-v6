@@ -40,7 +40,7 @@ export default function LogoutButton() {
                   onClick={() => setIsOpen(false)}
                   className="bg-card/50 fixed inset-0 top-0 left-0 w-screen h-full backdrop-blur-xs flex items-center justify-center z-50"
               >
-                  <div className="w-80 p-3 bg-secondary/20 rounded-md space-y-1">
+                  <div className="w-80 p-3 bg-secondary/40 rounded-md space-y-1">
                     <h1 className="h-10 text-xl flex items-center justify-center">
                         Are you absolutely sure?
                     </h1>

@@ -9,7 +9,7 @@ const processes = [
     id: 1,
     title: "1. Monitor Your Dashboard",
     description:
-      "Get an instant overview of balances, income, expenses, savings rate, and spending activity.",
+      "Get an instant overview of balances, income, expenses, savings rate, spending activity, and tracked financial goals.",
     desktopImage: "/expense-tracker/dashboard.png",
     mobileImage: "/expense-tracker/mobile/dashboard.png",
   },
@@ -17,7 +17,7 @@ const processes = [
     id: 2,
     title: "2. Review Transaction History",
     description:
-      "Access a complete history of your financial activity and quickly edit or remove transactions.",
+      "Access a complete history of your financial activity, search or filter by transaction type, and quickly edit or remove entries.",
     desktopImage: "/expense-tracker/transactions-page.png",
     mobileImage: "/expense-tracker/mobile/transactions-page.png",
   },
@@ -25,7 +25,7 @@ const processes = [
     id: 3,
     title: "3. Track Transactions",
     description:
-      "Record income and expenses with detailed categories, descriptions, and dates to keep every transaction organized.",
+      "Record income and expenses with detailed descriptions, currencies, amounts, dates, and assign them directly to categories, budgets, or goals.",
     desktopImage: "/expense-tracker/add-transaction.png",
     mobileImage: "/expense-tracker/mobile/add-transaction.png",
   },
@@ -33,49 +33,65 @@ const processes = [
     id: 4,
     title: "4. Manage Budget Categories",
     description:
-      "View category spending, track remaining funds, and stay within your monthly budget allocations.",
+      "View active budgets, track spent vs. remaining funds in real time, and monitor monthly usage percentages across categories.",
     desktopImage: "/expense-tracker/budgets-page.png",
     mobileImage: "/expense-tracker/mobile/budgets-page.png",
   },
   {
     id: 5,
-    title: "5. Create Budgets",
+    title: "5. Create & Edit Budgets",
     description:
-      "Set spending limits for different categories and monitor your remaining budget in real time.",
+      "Set up new spending limits across custom periods (monthly, weekly, yearly) or update existing budget allocations dynamically.",
     desktopImage: "/expense-tracker/add-budget.png",
     mobileImage: "/expense-tracker/mobile/add-budget.png",
   },
   {
     id: 6,
-    title: "6. Track Savings Progress",
+    title: "6. Organize Custom Categories",
     description:
-      "Monitor goal deadlines, saved amounts, and completion percentages to stay motivated.",
-    desktopImage: "/expense-tracker/goals-page.png",
-    mobileImage: "/expense-tracker/mobile/goals-page.png",
+      "Browse and organize custom spending and income categories paired with distinct Lucide icons and vibrant colors.",
+    desktopImage: "/expense-tracker/categories-page.png",
+    mobileImage: "/expense-tracker/mobile/categories-page.png",
   },
   {
     id: 7,
-    title: "7. Set Savings Goals",
+    title: "7. Create & Update Categories",
     description:
-      "Create financial goals, define target amounts, and track your progress toward important purchases.",
-    desktopImage: "/expense-tracker/add-goals.png",
-    mobileImage: "/expense-tracker/mobile/add-goals.png",
+      "Design personalized categories by assigning unique icons and hex color codes to keep your budget visual and intuitive.",
+    desktopImage: "/expense-tracker/add-category.png",
+    mobileImage: "/expense-tracker/mobile/add-category.png",
   },
   {
     id: 8,
     title: "8. Analyze Financial Reports",
     description:
-      "Visualize monthly income and expenses with charts and category breakdowns for better financial insights.",
+      "Visualize performance trends over time with interactive charts, top expense highlights, and comprehensive category breakdowns.",
     desktopImage: "/expense-tracker/report-page.png",
     mobileImage: "/expense-tracker/mobile/report-page.png",
   },
   {
     id: 9,
-    title: "9. Export Financial Reports",
+    title: "9. Track Savings Goals",
     description:
-      "Generate professional PDF statements containing transactions, balances, and savings goals.",
+      "Set target deadlines, track progress percentages, saved balances, and goal statuses to reach key financial targets.",
+    desktopImage: "/expense-tracker/goals-page.png",
+    mobileImage: "/expense-tracker/mobile/goals-page.png",
+  },
+  {
+    id: 10,
+    title: "10. Export Statements & Reports",
+    description:
+      "Generate clean PDF financial summaries detailing balances, monthly performance breakdown, and full transaction history.",
     desktopImage: "/expense-tracker/data-pdf.png",
     mobileImage: "/expense-tracker/mobile/data-pdf.png",
+  },
+  {
+    id: 11,
+    title: "11. Multi-Account Management",
+    description:
+      "Seamlessly switch between multiple user accounts or add secondary financial profiles directly from the header avatar drop-down.",
+    desktopImage: "/expense-tracker/account-switcher.png",
+    mobileImage: "/expense-tracker/mobile/account-switcher.png",
   },
 ];
 

@@ -238,3 +238,8 @@ npm i next-themes
 ```bash
 npm install recharts
 ```
+
+#### Features (Email, PDF, Security, State, PWA, Analytics)
+```bash
+npm i resend jspdf jspdf-autotable bcrypt-ts
+```
