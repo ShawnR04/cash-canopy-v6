@@ -115,10 +115,10 @@ export default function UpdateTransactionModal({
 
   const handleSelectChange = (
     field: keyof TransactionFormData,
-    value: string
+    value: string | null
   ) => {
-    // Treat "none" as empty string for DB clearing
-    const actualValue = value === "none" ? "" : value;
+    const safeValue = value ?? "";
+    const actualValue = safeValue === "none" ? "" : safeValue;
 
     setFormData((prev) => {
       const updated = { ...prev, [field]: actualValue };
