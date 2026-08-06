@@ -1,30 +1,33 @@
+"use client";
+
+import React, { useState, useMemo, useTransition } from "react";
+import { X } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { deleteCategory, updateCategory } from "@/app/actions/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isFilled } from "@/lib/checkIsFilled";
 import { DynamicIcon } from "@/lib/dynamicIcon";
-import { X } from "lucide-react";
-import * as LucideIcons from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
-interface OpenModalProps{
-  isOpen:boolean
-  setIsOpen: (val: boolean) => void
+export interface Category {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+}
+
+interface OpenModalProps {
+  isOpen: boolean;
+  setIsOpen: (val: boolean) => void;
   category: Category;
 }
 
-export interface Category{
-    id: number;
-    name: string;
-    icon: string;
-    color: string;
-}
-
-// Pre-defined list of common icons
-const FEATURED_ICONS = [
+// Default icons shown before the user types a search term
+const DEFAULT_SUGGESTED_ICONS = [
   "Folder",
   "ShoppingBag",
   "ShoppingCart",
@@ -39,6 +42,12 @@ const FEATURED_ICONS = [
   "Gift",
   "Film",
   "Smile",
+  "Repeat",        // Added for subscriptions
+  "RefreshCw",     // Added for subscriptions
+  "CalendarSync",  // Added for subscriptions
+  "Receipt",       // Added for subscriptions
+  "Coins",         // Added for cash/expenses
+  "Wallet",
 ] as const;
 
 // Preset category color palette
@@ -53,329 +62,356 @@ const PRESET_COLORS = [
   "#84cc16", // Lime
   "#6366f1", // Indigo
   "#f97316", // Orange
-
 ];
 
-export default function UpdateCategoriesModal({ isOpen, setIsOpen, category }: OpenModalProps){
-    const router = useRouter()
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isPending, startTransition] = useTransition();
-    const [isDeleting, setIsDeleting] = useState(false);
+export default function UpdateCategoriesModal({
+  isOpen,
+  setIsOpen,
+  category,
+}: OpenModalProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    const [formData, setFormData] = useState({
-        name: category?.name ?? "",
-        icon: category?.icon ?? "Folder",
-        color: category?.color ?? "#3b82f6",
+  const [formData, setFormData] = useState({
+    name: category?.name ?? "",
+    icon: category?.icon ?? "Folder",
+    color: category?.color ?? "#3b82f6",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // --- DYNAMIC LUCIDE SEARCH ---
+  const filteredIcons = useMemo(() => {
+    const searchTerm = formData.icon.trim().toLowerCase();
+
+    // 1. Get all export keys from lucide-react
+    const allLucideIconNames = Object.keys(LucideIcons).filter((key) => {
+      return (
+        key !== "default" &&
+        key !== "createLucideIcon" &&
+        typeof (LucideIcons as Record<string, unknown>)[key] === "object"
+      );
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    };
-
-    // Filter icons based on what user types into formData.icon
-    const searchTerm = formData.icon.trim().toLowerCase();
-    const filteredIcons = FEATURED_ICONS.filter((iconName) =>
-      iconName.toLowerCase().includes(searchTerm)
-    );
-
-    const fieldStatus = {
-      name: isFilled(formData.name, "text"),
-      icon: isFilled(formData.icon, "text"),
-      color: isFilled(formData.color, "text"),
+    // 2. Return defaults if input is empty
+    if (!searchTerm) {
+      return DEFAULT_SUGGESTED_ICONS;
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // 3. Search full Lucide directory (capped at 35 for render speed)
+    return allLucideIconNames
+      .filter((iconName) => iconName.toLowerCase().includes(searchTerm))
+      .slice(0, 35);
+  }, [formData.icon]);
 
-        const data = new FormData();
-        data.append("id", String(category.id));
-        data.append("name",formData.name);
-        data.append("icon", formData.icon);
-        data.append("color", formData.color);
+  const fieldStatus = {
+    name: isFilled(formData.name, "text"),
+    icon: isFilled(formData.icon, "text"),
+    color: isFilled(formData.color, "text"),
+  };
 
-        setIsSubmitting(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        const result = await updateCategory(data);
+    const data = new FormData();
+    data.append("id", String(category.id));
+    data.append("name", formData.name);
+    data.append("icon", formData.icon);
+    data.append("color", formData.color);
 
-        if(result?.success){
-            toast.success("Category updated successfully");
-            setFormData((prev) => ({
-                ...prev,
-            }));
+    setIsSubmitting(true);
 
-            setIsOpen(false);
-            startTransition(() => {
-              router.refresh();
-            });
-        }else{
-            toast.error(result?.error || "Something went wrong.");
-        }
+    const result = await updateCategory(data);
 
-        setIsSubmitting(false);
-    };
+    if (result?.success) {
+      toast.success("Category updated successfully");
+      setIsOpen(false);
+      startTransition(() => {
+        router.refresh();
+      });
+    } else {
+      toast.error(result?.error || "Something went wrong.");
+    }
 
-    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault(); // Stop form triggers
-        
-        const formData = new FormData();
-        formData.append("id", String(category.id));
-        setIsDeleting(true);
+    setIsSubmitting(false);
+  };
 
-        const result = await deleteCategory(formData);
-        if (result?.success) {
-            toast.success(`${category.name} deleted successfully!`);
-            setIsOpen(false);
-            setIsDeleting(false);
-        } else {
-            toast.error(result?.error || "Something went wrong.");
-            setIsDeleting(false);
-        }
-    };
+  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
 
-    return(
-        <>
-            <div className="modal-background z-2">
-                <div className="background-glow"/>
-                <form onSubmit={handleSubmit} className="modal-form">
-                    <div className="flex items-center justify-between relative px-5 max-w-19/20">
-                        <h1 className="form-heading">
-                          Update Category <span>{formData.name}</span>
-                        </h1>
-                        <button
-                          onClick={() => setIsOpen(!isOpen)}
-                          className="close-modal"
-                          aria-label="Close Modal"
-                          type="button"
-                        >
-                          <X/>
-                        </button>
-                    </div>
+    const deleteData = new FormData();
+    deleteData.append("id", String(category.id));
+    setIsDeleting(true);
 
-                    <div className="flex flex-col gap-3 mt-5">
-                      <div className="group flex flex-col gap-2">
-                          <div className="flex justify-between items-center gap-2">
-                            <Label
-                              htmlFor="name"
-                              className="custom-modal-label"
-                            >
-                              Category Name
-                            </Label>
-                            <Label
-                              className={`isfilled-badge ${
-                                fieldStatus.name
-                                ? "badge-success"
-                                : "badge-destructive"
-                              }`}
-                            >
-                              {fieldStatus.name ? 
-                            (
-                                <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                              ) : (
-                                <LucideIcons.Asterisk className="w-4 h-4" />
-                            )}
-                            </Label>
-                          </div>
-                          <Input
-                          id="name"
-                          name="name"
-                          type="text"
-                          required
-                          value={formData.name}
-                          onChange={handleChange}
-                          placeholder="e.g. Groceries"
-                          className={`h-11 ${
-                            fieldStatus.name ? "focus-visible:ring-success border-success/30" : ""
-                          }`}
-                        />
-                      </div>
+    const result = await deleteCategory(deleteData);
+    if (result?.success) {
+      toast.success(`${category.name} deleted successfully!`);
+      setIsOpen(false);
+      setIsDeleting(false);
+      startTransition(() => {
+        router.refresh();
+      });
+    } else {
+      toast.error(result?.error || "Something went wrong.");
+      setIsDeleting(false);
+    }
+  };
 
-                      {/* --- ICON SELECTION & CUSTOM INPUT --- */}
-                      <div className="group flex flex-col gap-2">
-                          <div className="flex justify-between items-center gap-2">
-                            <Label
-                              htmlFor="icon"
-                              className="custom-modal-label"
-                            >
-                              Icon
-                            </Label>
-                            <Label
-                              className={`isfilled-badge ${
-                                fieldStatus.icon
-                                ? "badge-success"
-                                : "badge-destructive"
-                              }`}
-                            >
-                              {fieldStatus.icon ? 
-                              (
-                                <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                              ) : (
-                                <LucideIcons.Asterisk className="w-4 h-4" />
-                            )}
-                            </Label>
-                          </div>
-                          <div className="relative ">
-                            <Input
-                              id="icon"
-                              name="icon"
-                              type="text"
-                              required
-                              value={formData.icon}
-                              onChange={handleChange}
-                              placeholder="Type to search icon (e.g. ShoppingCart)..."
-                              className={`h-11 pl-12 ${
-                                fieldStatus.icon ? "focus-visible:ring-success border-success/30" : ""
-                              }`}
-                            />
+  if (!isOpen) return null;
 
-                            <div 
-                              className="absolute w-7 h-7 flex items-center justify-center left-3 top-2 rounded-md"
-                              style={{
-                                backgroundColor: `${formData.color}20`,
-                                color: formData.color
-                              }}
-                            >
-                              <DynamicIcon name={formData.icon} className="w-4 h-4"/>
-                            </div>
-                          </div>
-
-                          <p className="text-[13px] text-muted-foreground my-2">
-                            {filteredIcons.length > 0 
-                              ? "Select a suggested icon below or type any custom Lucide icon name:" 
-                              : "No suggestions match your search. You can still type any valid Lucide icon name!"
-                            }
-                          </p>
-
-                          {filteredIcons.length > 0 && (
-                            <div className="grid grid-cols-7 gap-1.5 p-2 border border-border rounded-xl max-h-32 overflow-y-auto">
-                              {filteredIcons.map((iconName) => {
-                                const isSelected = formData.icon.toLowerCase() === iconName.toLowerCase();
-                                return(
-                                  <button 
-                                    key={iconName} 
-                                    type="button"
-                                    title={iconName}
-                                    onClick={() =>
-                                      handleChange({
-                                        target: { name: "icon", value: iconName },
-                                      } as React.ChangeEvent<HTMLInputElement>)
-                                    }
-                                    className={`p-2 flex items-center justify-center rounded-lg transition-all ${
-                                      isSelected
-                                        ? "bg-secondary shadow-sm"
-                                        : "hover:bg-secondary/60"
-                                    }`}
-                                  >
-                                    <DynamicIcon name={iconName} className="w-4 h-4"/>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                      </div>
-
-                      {/* --- COLOR SELECTION --- */}
-                      <div className="group flex flex-col gap-2">
-                        <div className="flex justify-between items-center gap-2">
-                          <Label
-                            htmlFor="color"
-                            className="custom-modal-label"
-                          >
-                            Color Palette
-                          </Label>
-                          <Label
-                            className={`isfilled-badge ${
-                              fieldStatus.color
-                              ? "badge-success"
-                              : "badge-destructive"
-                            }`}
-                          >
-                            {fieldStatus.color ? 
-                                (
-                                <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]"/>
-                              ) : (
-                                <LucideIcons.Asterisk className="w-4 h-4" />
-                            )}
-                          </Label>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          {/* Swatches */}
-                          <div className="grid grid-cols-5 gap-2 mb-3">
-                            {PRESET_COLORS.map((presetColor) => {
-                              const isSelected =formData.color.toLowerCase() === presetColor.toLowerCase();
-                              return(
-                                <button 
-                                  key={presetColor} 
-                                  type="button"
-                                  onClick={() =>
-                                        handleChange({
-                                          target: { name: "color", value: presetColor },
-                                        } as React.ChangeEvent<HTMLInputElement>)
-                                      }
-                                  className={`h-7 w-7 rounded-full flex items-center justify-center ${
-                                    isSelected
-                                      ? "ring-2 ring-offset-1 scale-105 shadow-sm"
-                                      : "hover:scale-105 opacity-90 hover:opacity-100"
-                                  }`}
-                                  style={{ backgroundColor: presetColor }}
-                                  title={presetColor}
-                                >
-                                  {isSelected && (
-                                    <LucideIcons.Check className="w-4 h-4 drop-shadow" />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        
-                          {/* Hex Input */}
-                          <div className="w-1/2 flex items-center gap-3 mt-2">
-                            <div className="relative w-11 h-11 shrink-0 overflow-hidden rounded-xl border border-border shadow-sm">
-                              <input 
-                                name="color"
-                                type="color" 
-                                value={formData.color}
-                                onChange={handleChange}
-                                className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0 p-0"                          />
-                            </div>
-
-                            <div className="flex-1">
-                              <Input 
-                                name="color"
-                                type="text" 
-                                value={formData.color}
-                                onChange={handleChange}
-                                placeholder="#0000"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-5">
-                      <Button
-                        variant="outline"
-                        className="modal-button h-11"
-                        onClick={() => setIsOpen(!isOpen)}
-                      >
-                        Cancel
-                      </Button>
-
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="modal-button h-11"
-                      >
-                        {isSubmitting ? "Saving..." : "Create Category"}
-                      </Button>
-                    </div>
-                </form>
+  return (
+    <div className="modal-background z-2">
+      <div className="background-glow" />
+      <form onSubmit={handleSubmit} className="modal-form">
+        <div className="flex items-center justify-between relative px-5 max-w-19/20">
+          <h1 className="form-heading">
+            Update Category <span>{formData.name}</span>
+          </h1>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="close-modal"
+            aria-label="Close Modal"
+            type="button"
+          >
+            <X />
+          </button>
         </div>
-        </>
-    );
+
+        <div className="flex flex-col gap-3 mt-5">
+          {/* --- CATEGORY NAME --- */}
+          <div className="group flex flex-col gap-2">
+            <div className="flex justify-between items-center gap-2">
+              <Label htmlFor="name" className="custom-modal-label">
+                Category Name
+              </Label>
+              <Label
+                className={`isfilled-badge ${
+                  fieldStatus.name ? "badge-success" : "badge-destructive"
+                }`}
+              >
+                {fieldStatus.name ? (
+                  <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                ) : (
+                  <LucideIcons.Asterisk className="w-4 h-4" />
+                )}
+              </Label>
+            </div>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              required
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="e.g. Groceries"
+              className={`h-11 ${
+                fieldStatus.name
+                  ? "focus-visible:ring-success border-success/30"
+                  : ""
+              }`}
+            />
+          </div>
+
+          {/* --- ICON SELECTION & DYNAMIC SEARCH --- */}
+          <div className="group flex flex-col gap-2">
+            <div className="flex justify-between items-center gap-2">
+              <Label htmlFor="icon" className="custom-modal-label">
+                Icon
+              </Label>
+              <Label
+                className={`isfilled-badge ${
+                  fieldStatus.icon ? "badge-success" : "badge-destructive"
+                }`}
+              >
+                {fieldStatus.icon ? (
+                  <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                ) : (
+                  <LucideIcons.Asterisk className="w-4 h-4" />
+                )}
+              </Label>
+            </div>
+            <div className="relative">
+              <Input
+                id="icon"
+                name="icon"
+                type="text"
+                required
+                value={formData.icon}
+                onChange={handleChange}
+                placeholder="Search any Lucide icon (e.g. Repeat, Receipt, Sparkles)..."
+                className={`h-11 pl-12 ${
+                  fieldStatus.icon
+                    ? "focus-visible:ring-success border-success/30"
+                    : ""
+                }`}
+              />
+
+              <div
+                className="absolute w-7 h-7 flex items-center justify-center left-3 top-2 rounded-md"
+                style={{
+                  backgroundColor: `${formData.color}20`,
+                  color: formData.color,
+                }}
+              >
+                <DynamicIcon name={formData.icon} className="w-4 h-4" />
+              </div>
+            </div>
+
+            <p className="text-[13px] text-muted-foreground my-1">
+              {formData.icon.trim() === ""
+                ? "Popular suggestions:"
+                : filteredIcons.length > 0
+                ? "Showing matching Lucide icons:"
+                : "No exact icon match found, but custom Lucide string will still work!"}
+            </p>
+
+            {filteredIcons.length > 0 && (
+              <div className="grid grid-cols-7 gap-1.5 p-2 border border-border rounded-xl max-h-36 overflow-y-auto">
+                {filteredIcons.map((iconName) => {
+                  const isSelected =
+                    formData.icon.toLowerCase() === iconName.toLowerCase();
+                  return (
+                    <button
+                      key={iconName}
+                      type="button"
+                      title={iconName}
+                      onClick={() =>
+                        handleChange({
+                          target: { name: "icon", value: iconName },
+                        } as React.ChangeEvent<HTMLInputElement>)
+                      }
+                      className={`p-2 flex items-center justify-center rounded-lg transition-all ${
+                        isSelected
+                          ? "bg-secondary shadow-sm ring-1 ring-primary/40"
+                          : "hover:bg-secondary/60"
+                      }`}
+                    >
+                      <DynamicIcon name={iconName} className="w-4 h-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* --- COLOR SELECTION --- */}
+          <div className="group flex flex-col gap-2">
+            <div className="flex justify-between items-center gap-2">
+              <Label htmlFor="color" className="custom-modal-label">
+                Color Palette
+              </Label>
+              <Label
+                className={`isfilled-badge ${
+                  fieldStatus.color ? "badge-success" : "badge-destructive"
+                }`}
+              >
+                {fieldStatus.color ? (
+                  <LucideIcons.BadgeCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                ) : (
+                  <LucideIcons.Asterisk className="w-4 h-4" />
+                )}
+              </Label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              {/* Swatches */}
+              <div className="grid grid-cols-5 gap-2 mb-3">
+                {PRESET_COLORS.map((presetColor) => {
+                  const isSelected =
+                    formData.color.toLowerCase() === presetColor.toLowerCase();
+                  return (
+                    <button
+                      key={presetColor}
+                      type="button"
+                      onClick={() =>
+                        handleChange({
+                          target: { name: "color", value: presetColor },
+                        } as React.ChangeEvent<HTMLInputElement>)
+                      }
+                      className={`h-7 w-7 rounded-full flex items-center justify-center ${
+                        isSelected
+                          ? "ring-2 ring-offset-1 scale-105 shadow-sm"
+                          : "hover:scale-105 opacity-90 hover:opacity-100"
+                      }`}
+                      style={{ backgroundColor: presetColor }}
+                      title={presetColor}
+                    >
+                      {isSelected && (
+                        <LucideIcons.Check className="w-4 h-4 drop-shadow text-white" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Hex Input */}
+              <div className="w-1/2 flex items-center gap-3 mt-2">
+                <div className="relative w-11 h-11 shrink-0 overflow-hidden rounded-xl border border-border shadow-sm">
+                  <input
+                    name="color"
+                    type="color"
+                    value={formData.color}
+                    onChange={handleChange}
+                    className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0 p-0"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <Input
+                    name="color"
+                    type="text"
+                    value={formData.color}
+                    onChange={handleChange}
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- ACTION BUTTONS --- */}
+        <div className="flex items-center justify-between gap-3 mt-5">
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isDeleting || isSubmitting}
+            onClick={handleDelete}
+            className="h-11 px-4"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="modal-button h-11"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || isPending || isDeleting}
+              className="modal-button h-11"
+            >
+              {isSubmitting ? "Saving..." : "Update Category"}
+            </Button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 }
