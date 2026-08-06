@@ -43,7 +43,7 @@ export default function SideNav({
     { id: "budgets", label: "Budgets", icon: Wallet },
     { id: "categories", label: "Categories", icon: Boxes },
     { id: "report", label: "Report", icon: TrendingUp },
-    { id: "goals", label: "Savings Goals", icon: Target },
+    { id: "goals", label: "Goals", icon: Target },
   ];
 
   const handleNavClick = (linkId: string) => {
