@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from "react";
 import * as LucideIcons from "lucide-react";
 import { getReportsData } from "@/app/actions/report";
