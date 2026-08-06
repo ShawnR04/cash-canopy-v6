@@ -6,6 +6,7 @@ import {
   Boxes,
   LayoutDashboard,
   Menu,
+  MessageSquarePlus,
   Target,
   TrendingUp,
   Wallet,
@@ -16,6 +17,7 @@ import { useState } from "react";
 import AccountSwitcher from "./accountSwitcher";
 import LogoutButton from "./logoutBtn";
 import ExportData from "./exportData";
+import { Button } from "@/components/ui/button";
 
 interface SidenavProps {
   username: string;
@@ -24,6 +26,7 @@ interface SidenavProps {
   version: string;
   activeTab: string;
   setActiveTab: (id: string) => void;
+  onSendFeedback?: () => void; // Optional handler prop for opening feedback modal/link
 }
 
 export default function SideNav({
@@ -33,6 +36,7 @@ export default function SideNav({
   version,
   activeTab,
   setActiveTab,
+  onSendFeedback,
 }: SidenavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -111,11 +115,11 @@ export default function SideNav({
 
       {/* SideNav */}
       <aside
-        className={`z-40 bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block ${
+        className={`z-40 bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block flex flex-col justify-between ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="w-full py-5 flex flex-col items-center relative">
+        <div className="w-full py-5 flex flex-col items-center relative overflow-y-auto">
           {/* Close Menu Button */}
           <button
             onClick={() => setIsOpen(false)}
@@ -157,7 +161,7 @@ export default function SideNav({
                 <button
                   onClick={() => handleNavClick(link.id)}
                   type="button"
-                  aria-label="nav-link"
+                  aria-label={link.label}
                   className="px-5 py-3 gap-2 w-full flex items-center transition-all cursor-pointer"
                 >
                   <span>
@@ -172,24 +176,39 @@ export default function SideNav({
                 </button>
               </div>
             ))}
-
-            {/* Export Data */}
-            <div className="flex items-center justify-center">
-              <ExportData />
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="h-10 flex items-center justify-around">
-              <LogoutButton />
-            </div>
-
-            {/* Version */}
-            <div className="h-5 flex items-center justify-center">
-              <h1 className="text-xs text-muted-foreground">
-                Version {version}
-              </h1>
-            </div>
           </nav>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="w-full space-y-3">
+
+          {/* Export Data */}
+          <div className="flex items-center justify-center">
+            <ExportData />
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="h-10 flex items-center justify-around">
+            <LogoutButton />
+          </div>
+
+          {/* Send Feedback Button */}
+          <Button
+            variant="outline"
+            type="button"
+            onClick={onSendFeedback}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-md transition-all duration-300 cursor-pointer"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+            <span>Send Feedback</span>
+          </Button>
+
+          {/* Version */}
+          <div className="h-5 flex items-center justify-center">
+            <h1 className="text-xs text-muted-foreground">
+              Version {version}
+            </h1>
+          </div>
         </div>
       </aside>
     </>
