@@ -1,4 +1,5 @@
 import AppProcessScroll from "@/components/app/hero/AppProcessScroll";
+import Footer from "@/components/app/hero/footer";
 import TopNav from "@/components/app/hero/topnav";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <div className="h-dvh overflow-y-auto no-scrollbar flex flex-col">
-      <div className="h-15 w-full fixed border-b border-border">
+      <div className="h-15 w-full fixed top-0 left-0 z-50 border-b border-border bg-background">
         <TopNav/>
       </div>
       <div className="h-full px-1 pt-15 overflow-y-auto no-scrollbar">
@@ -30,6 +31,10 @@ export default function Hero() {
 
         <div className="h-full">
           <AppProcessScroll/>
+        </div>
+
+        <div>
+          <Footer/>
         </div>
       </div>
     </div>

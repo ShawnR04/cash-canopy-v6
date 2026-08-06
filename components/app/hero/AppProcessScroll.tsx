@@ -119,7 +119,7 @@ export default function AppProcessScroll(){
         <>
             <div className="h-full w-full max-w-4xl mx-auto px-4 py-8">
                 <div className="relative w-full h-full aspect-3/4 md:aspect-video">
-                    <div className="w-full h-full relative rounded-md overflow-hidden bg-card rounded-md">
+                    <div className="w-full h-full relative rounded-md overflow-hidden bg-card rounded-md z-01">
                         {processes.map((process, index) => (
                             <div key={process.id}
                                 className={`absolute inset-0 transition-opacity duration-700 ease-in-out p-5 ${

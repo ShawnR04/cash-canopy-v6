@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function TopNav(){
     return(
         <>
-            <div className="h-full w-full bg-background flex items-center justify-between">
+            <div className="h-full w-full bg-background flex items-center justify-between z-9999">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/favicon.ico"
