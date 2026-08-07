@@ -23,9 +23,8 @@ export async function POST(request: Request) {
 
     const resend = new Resend(apiKey);
 
-    // Dynamic origin detection, or fallback to your production URL
     const origin = request.headers.get("origin") || "https://cash-canopy.vercel.app";
-    const logoUrl = `${origin}/favicon.ico`; 
+    const logoUrl = `${origin}/favicon.ico`;
 
     const { data, error } = await resend.emails.send({
       from: "CashCanopy Feedback <onboarding@resend.dev>",
@@ -36,41 +35,170 @@ export async function POST(request: Request) {
         <html>
           <head>
             <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
             <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px; }
-              .container { max-width: 550px; background: #ffffff; margin: 0 auto; padding: 24px; border-radius: 8px; border: 1px solid #e4e4e7; }
-              .header { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #e4e4e7; }
-              .logo { width: 36px; height: 36px; border-radius: 6px; }
-              .title { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
-              .content { padding-top: 20px; }
-              .user-info { background-color: #f8fafc; padding: 12px 16px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 16px; font-size: 14px; color: #334155; }
-              .message-box { font-size: 15px; line-height: 1.6; color: #0f172a; white-space: pre-wrap; background: #ffffff; padding: 12px; border-left: 4px solid #10b981; }
+              /* Responsive Reset & Base Typography mapped to Cash Canopy Theme */
+              body {
+                font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background-color: #fafafa;
+                color: #121829;
+                margin: 0;
+                padding: 32px 16px;
+                -webkit-font-smoothing: antialiased;
+              }
+              .wrapper {
+                max-width: 560px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 12px;
+                border: 1px solid #e4e4e7;
+                box-shadow: 0 4px 12px rgba(18, 24, 41, 0.03);
+                overflow: hidden;
+              }
+              .top-bar {
+                height: 5px;
+                background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+              }
+              .container {
+                padding: 32px;
+              }
+              .logo {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+              }
+              .app-title {
+                font-size: 20px;
+                font-weight: 700;
+                color: #121829;
+                margin: 0;
+                letter-spacing: -0.3px;
+              }
+              .badge {
+                display: inline-block;
+                background-color: #eff6ff;
+                color: #2563eb;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 4px 10px;
+                border-radius: 20px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+              .divider {
+                height: 1px;
+                background-color: #f4f4f5;
+                margin: 24px 0;
+              }
+              .user-card {
+                background-color: #f8fafc;
+                border-radius: 10px;
+                border: 1px solid #e2e8f0;
+                padding: 16px;
+              }
+              .user-label {
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: #64748b;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+              }
+              .user-value {
+                font-size: 14px;
+                font-weight: 600;
+                color: #121829;
+                margin: 0;
+              }
+              .section-heading {
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: #64748b;
+                letter-spacing: 0.6px;
+                margin: 0 0 10px 0;
+              }
+              .message-card {
+                background-color: #ffffff;
+                border-left: 4px solid #10b981;
+                border-top: 1px solid #f4f4f5;
+                border-right: 1px solid #f4f4f5;
+                border-bottom: 1px solid #f4f4f5;
+                border-radius: 0 8px 8px 0;
+                padding: 16px 20px;
+                font-size: 14px;
+                line-height: 1.6;
+                color: #1e293b;
+              }
+              .footer {
+                padding: 16px 32px;
+                background-color: #f8fafc;
+                border-top: 1px solid #f1f5f9;
+                font-size: 12px;
+                color: #94a3b8;
+                text-align: center;
+              }
             </style>
           </head>
           <body>
-            <div class="container">
-              <!-- Header with App Logo & Title -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td width="48" valign="middle">
-                    <img src="${logoUrl}" alt="Cash Canopy Logo" width="36" height="36" style="display: block; border-radius: 6px;" />
-                  </td>
-                  <td valign="middle">
-                    <h1 class="title">Cash Canopy</h1>
-                  </td>
-                </tr>
-              </table>
+            <div class="wrapper">
+              <!-- Cash Canopy Gradient Accent -->
+              <div class="top-bar"></div>
 
-              <div class="content">
-                <div class="user-info">
-                  <p style="margin: 0 0 6px 0;"><strong>User:</strong> ${username || "Anonymous"}</p>
-                  <p style="margin: 0;"><strong>Email:</strong> ${email || "Not provided"}</p>
-                </div>
+              <div class="container">
+                <!-- Branding Header -->
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td valign="middle">
+                      <table border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td width="42" valign="middle">
+                            <img src="${logoUrl}" alt="Cash Canopy" width="32" height="32" class="logo" />
+                          </td>
+                          <td valign="middle">
+                            <h1 class="app-title">Cash Canopy</h1>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td align="right" valign="middle">
+                      <span class="badge">Feedback</span>
+                    </td>
+                  </tr>
+                </table>
 
-                <p style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 8px;">FEEDBACK MESSAGE:</p>
-                <div class="message-box">
+                <div class="divider"></div>
+
+                <!-- User Meta Grid -->
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                  <tr>
+                    <td width="48%" valign="top">
+                      <div class="user-card">
+                        <div class="user-label">Submitted By</div>
+                        <p class="user-value">${username || "Anonymous"}</p>
+                      </div>
+                    </td>
+                    <td width="4%"></td>
+                    <td width="48%" valign="top">
+                      <div class="user-card">
+                        <div class="user-label">Email Address</div>
+                        <p class="user-value">${email || "Not provided"}</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Feedback Content -->
+                <p class="section-heading">User Message</p>
+                <div class="message-card">
                   ${feedback.replace(/\n/g, "<br/>")}
                 </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="footer">
+                Cash Canopy Automated System • Sent via Resend
               </div>
             </div>
           </body>
