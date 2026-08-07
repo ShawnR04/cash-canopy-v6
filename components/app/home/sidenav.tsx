@@ -119,7 +119,7 @@ export default function SideNav({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="w-full py-5 flex flex-col items-center relative overflow-y-auto">
+        <div className="w-full py-3 flex flex-col items-center relative overflow-y-auto">
           {/* Close Menu Button */}
           <button
             onClick={() => setIsOpen(false)}
@@ -149,7 +149,7 @@ export default function SideNav({
           </div>
 
           {/* Main Navigation Links */}
-          <nav className="w-full py-5 space-y-2">
+          <nav className="w-full py-3 space-y-2">
             {NAV_LINKS.map((link) => (
               <div
                 key={link.id}
