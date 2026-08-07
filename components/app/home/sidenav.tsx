@@ -149,7 +149,7 @@ export default function SideNav({
           </div>
 
           {/* Main Navigation Links */}
-          <nav className="w-full py-3 space-y-2">
+          <nav className="w-full py-5 space-y-2">
             {NAV_LINKS.map((link) => (
               <div
                 key={link.id}
