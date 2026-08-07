@@ -14,29 +14,36 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      console.error("RESEND_API_KEY is not defined in environment variables.");
+      console.error("RESEND_API_KEY is missing in environment variables.");
       return NextResponse.json(
         { error: "Server misconfiguration. API key missing." },
         { status: 500 }
       );
     }
 
-    // Instantiate Resend INSIDE the request handler so it won't crash during build time
     const resend = new Resend(apiKey);
 
-    await resend.emails.send({
-      from: "Feedback <onboarding@resend.dev>", // Replace with your verified domain in Resend
-      to: "your-email@example.com",             // Your target email address
+    const { data, error } = await resend.emails.send({
+      from: "Feedback <onboarding@resend.dev>",
+      to: "shawnrimai004@gmail.com", // Set to your registered Resend email
       subject: `App Feedback from ${username || "User"}`,
       html: `
         <h2>New Feedback Received</h2>
         <p><strong>User:</strong> ${username || "Anonymous"}</p>
-        <p><strong>Email:</strong> ${email || "Not provided"}</p>
+        <p><strong>User Email:</strong> ${email || "Not provided"}</p>
         <hr />
         <p><strong>Message:</strong></p>
         <p>${feedback.replace(/\n/g, "<br/>")}</p>
       `,
     });
+
+    if (error) {
+      console.error("Resend delivery error:", error);
+      return NextResponse.json(
+        { error: error.message || "Failed to deliver email." },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
