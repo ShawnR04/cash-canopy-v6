@@ -1,23 +1,33 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
   try {
     const { feedback, username, email } = await request.json();
 
     if (!feedback || feedback.trim() === "") {
       return NextResponse.json(
-        { error: "Feedback message is required." },
+        { error: "Feedback content is required." },
         { status: 400 }
       );
     }
 
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("RESEND_API_KEY is not defined in environment variables.");
+      return NextResponse.json(
+        { error: "Server misconfiguration. API key missing." },
+        { status: 500 }
+      );
+    }
+
+    // Instantiate Resend INSIDE the request handler so it won't crash during build time
+    const resend = new Resend(apiKey);
+
     await resend.emails.send({
-      from: "Feedback Form <onboarding@resend.dev>", // Replace with your domain once verified
-      to: "your-email@example.com", // Your personal or support email
-      subject: `New App Feedback from ${username || "User"}`,
+      from: "Feedback <onboarding@resend.dev>", // Replace with your verified domain in Resend
+      to: "your-email@example.com",             // Your target email address
+      subject: `App Feedback from ${username || "User"}`,
       html: `
         <h2>New Feedback Received</h2>
         <p><strong>User:</strong> ${username || "Anonymous"}</p>
@@ -28,11 +38,11 @@ export async function POST(request: Request) {
       `,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Feedback submission error:", error);
     return NextResponse.json(
-      { error: "Failed to send feedback." },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
