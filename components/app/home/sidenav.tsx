@@ -115,7 +115,7 @@ export default function SideNav({
 
       {/* SideNav */}
       <aside
-        className={`z-40 bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block flex flex-col justify-between ${
+        className={`z-40 bg-card w-55 h-full p-5 fixed top-0 left-0 transform transition-all duration-400 ease-in-out md:translate-x-0 md:block flex flex-col justify-between no-scrollbar ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
