@@ -67,41 +67,44 @@ export default function HomeClient({
   };
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedbackText.trim()) return;
+  e.preventDefault();
+  if (!feedbackText.trim()) return;
 
-    setIsSubmitting(true);
-    setErrorMessage("");
+  setIsSubmitting(true);
+  setErrorMessage("");
 
-    try {
-      const response = await fetch("/api/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          feedback: feedbackText,
-          username,
-          email,
-        }),
-      });
+  try {
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        feedback: feedbackText,
+        username,
+        email,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to send feedback. Please try again.");
-      }
+    const data = await response.json();
 
-      setIsSuccess(true);
-      // Automatically close modal after 2 seconds on success
-      setTimeout(() => {
-        handleCloseModal();
-      }, 2000);
-    } catch (error: any) {
-      console.error("Feedback error:", error);
-      setErrorMessage(error.message || "An unexpected error occurred.");
-    } finally {
-      setIsSubmitting(false);
+    if (!response.ok) {
+      // Pass the actual backend / Resend error string through
+      throw new Error(data.error || "Failed to send feedback.");
     }
-  };
+
+    setIsSuccess(true);
+    // Automatically close modal after 2 seconds on success
+    setTimeout(() => {
+      handleCloseModal();
+    }, 2000);
+  } catch (error: any) {
+    console.error("Feedback submission error:", error);
+    setErrorMessage(error.message || "An unexpected error occurred.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const renderContent = () => {
     switch (activeTab) {

@@ -77,7 +77,7 @@ export const FeedbackEmail = ({
             {/* Message Content */}
             <Text style={sectionHeader}>Feedback Message</Text>
             <Section style={messageBox}>
-              <Text style={messageText}>"{feedback}"</Text>
+              <Text style={messageText}>&quot;{feedback}&quot;</Text>
             </Section>
           </Section>
         </Container>
