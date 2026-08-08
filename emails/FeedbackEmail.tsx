@@ -23,7 +23,7 @@ interface FeedbackEmailProps {
 
 export const FeedbackEmail = ({
   username = "Shawn Rimai",
-  email = "shawnrimai004@gmail.com",
+  email = "cashcanopydev@gmail.com",
   feedback = "The expense breakdown on the dashboard is amazing! Would love to see budget alerts next.",
   logoUrl = "https://cashcanopy.dev/favicon.ico",
 }: FeedbackEmailProps) => {
