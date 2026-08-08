@@ -14,19 +14,19 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-interface FeedbackEmailProps {
+export interface FeedbackEmailProps {
   username?: string;
   email?: string;
   feedback?: string;
   logoUrl?: string;
 }
 
-export const FeedbackEmail = ({
+export function FeedbackEmail({
   username = "Shawn Rimai",
   email = "cashcanopydev@gmail.com",
   feedback = "The expense breakdown on the dashboard is amazing! Would love to see budget alerts next.",
   logoUrl = "https://cashcanopy.dev/favicon.ico",
-}: FeedbackEmailProps) => {
+}: FeedbackEmailProps) {
   return (
     <Html>
       <Head />
@@ -37,7 +37,7 @@ export const FeedbackEmail = ({
           <Section style={topBar} />
 
           <Section style={content}>
-            {/* Header Header Row */}
+            {/* Header Row */}
             <Row style={headerRow}>
               <Column style={{ width: "36px" }}>
                 <Img
@@ -84,7 +84,7 @@ export const FeedbackEmail = ({
       </Body>
     </Html>
   );
-};
+}
 
 export default FeedbackEmail;
 
@@ -111,7 +111,7 @@ const container = {
 const topBar = {
   height: "5px",
   width: "100%",
-  backgroundColor: "#10b981", // Fallback color for email clients without gradient support
+  backgroundColor: "#10b981",
   backgroundImage: "linear-gradient(90deg, #3b82f6 0%, #10b981 100%)",
 };
 
