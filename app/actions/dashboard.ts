@@ -25,7 +25,6 @@ export async function getDashboardMetrics() {
       db.select().from(budgetsTable).where(eq(budgetsTable.userId, userId)),
       db.select().from(goalsTable).where(eq(goalsTable.userId, userId)),
       
-      // 🚨 Joined Query for Recent Transactions (Classification details)
       db
         .select({
           id: transactionsTable.id,
@@ -58,59 +57,113 @@ export async function getDashboardMetrics() {
         .limit(5),
     ]);
 
-    // Cleanup null joins for recent transactions
-    const processedRecentTransactions = recentTxRows.map((row) => ({
-      ...row,
-      category: row.category?.id ? row.category : null,
-      budget: row.budget?.id ? row.budget : null,
-      goal: row.goal?.id ? row.goal : null,
-    }));
-
-    // 2. Map Categories for fast lookup
+    // Fast lookups
     const categoryMap = new Map(categories.map((c) => [c.id, c]));
+    const budgetMap = new Map(budgets.map((b) => [b.id, b]));
+    const goalMap = new Map(goals.map((g) => [g.id, g]));
 
-    // 3. Compute High-Level Financial Metrics
     let totalIncome = 0;
     let totalExpenses = 0;
-    const categoryTotals: Record<number, number> = {};
-    const budgetTotals: Record<number, number> = {};
+
+    // Grouping container for Expenses across Categories, Budgets, and Goals
+    const spendingMap = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        type: "category" | "budget" | "goal" | "uncategorized";
+        icon?: string;
+        color: string;
+        amount: number;
+      }
+    >();
 
     transactions.forEach((tx) => {
       const amount = Number(tx.amount);
+
       if (tx.type === "Income") {
         totalIncome += amount;
       } else if (tx.type === "Expense") {
         totalExpenses += amount;
-        
-        if (tx.categoryId) {
-          categoryTotals[tx.categoryId] = (categoryTotals[tx.categoryId] || 0) + amount;
+
+        let key = "";
+        let name = "";
+        let groupType: "category" | "budget" | "goal" | "uncategorized" = "uncategorized";
+        let icon = "Folder";
+        let color = "#64748b";
+
+        // Priority 1: Direct Category
+        if (tx.categoryId && categoryMap.has(tx.categoryId)) {
+          const cat = categoryMap.get(tx.categoryId)!;
+          key = `cat-${cat.id}`;
+          name = cat.name;
+          groupType = "category";
+          icon = cat.icon || "Folder";
+          color = cat.color || "#3b82f6";
+        } 
+        // Priority 2: Budget
+        else if (tx.budgetId && budgetMap.has(tx.budgetId)) {
+          const b = budgetMap.get(tx.budgetId)!;
+          key = `budget-${b.id}`;
+          name = b.name;
+          groupType = "budget";
+          icon = "PieChart";
+          color = "#eab308";
+        } 
+        // Priority 3: Goal
+        else if (tx.goalId && goalMap.has(tx.goalId)) {
+          const g = goalMap.get(tx.goalId)!;
+          key = `goal-${g.id}`;
+          name = g.name;
+          groupType = "goal";
+          icon = "Target";
+          color = "#10b981";
+        } 
+        // Fallback: Uncategorized
+        else {
+          key = "uncategorized";
+          name = "Uncategorized";
+          groupType = "uncategorized";
+          icon = "HelpCircle";
+          color = "#6b7280";
         }
-        if (tx.budgetId) {
-          budgetTotals[tx.budgetId] = (budgetTotals[tx.budgetId] || 0) + amount;
-        }
+
+        const current = spendingMap.get(key) || {
+          id: key,
+          name,
+          type: groupType,
+          icon,
+          color,
+          amount: 0,
+        };
+
+        current.amount += amount;
+        spendingMap.set(key, current);
       }
     });
 
     const netBalance = totalIncome - totalExpenses;
     const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
 
-    // 4. Build Category Spending Breakdown
-    const categoryBreakdown = Object.entries(categoryTotals)
-      .map(([catId, amount]) => {
-        const category = categoryMap.get(Number(catId));
-        const percentage = totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) : "0.0";
+    // Build spending breakdown with calculated percentage
+    const categoryBreakdown = Array.from(spendingMap.values())
+      .map((item) => {
+        const percentage = totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : "0.0";
         return {
-          id: Number(catId),
-          name: category?.name || "Uncategorized",
-          icon: category?.icon || "Folder",
-          color: category?.color || "#3b82f6",
-          amount,
+          ...item,
           percentage: `${percentage}%`,
         };
       })
       .sort((a, b) => b.amount - a.amount);
 
-    // 5. Build Budgets with Spent Amounts
+    // Compute progress for budgets & goals
+    const budgetTotals: Record<number, number> = {};
+    transactions.forEach((tx) => {
+      if (tx.type === "Expense" && tx.budgetId) {
+        budgetTotals[tx.budgetId] = (budgetTotals[tx.budgetId] || 0) + Number(tx.amount);
+      }
+    });
+
     const processedBudgets = budgets.map((b) => {
       const spent = budgetTotals[b.id] || 0;
       const limit = Number(b.amount || 0);
@@ -122,7 +175,6 @@ export async function getDashboardMetrics() {
       };
     });
 
-    // 6. Process Goals
     const processedGoals = goals.map((g) => {
       const current = Number(g.currentAmount || 0);
       const target = Number(g.targetAmount || 1);
@@ -142,7 +194,7 @@ export async function getDashboardMetrics() {
         savingsRate,
       },
       categoryBreakdown,
-      recentTransactions: processedRecentTransactions,
+      recentTransactions: recentTxRows,
       categories,
       budgets: processedBudgets,
       goals: processedGoals,

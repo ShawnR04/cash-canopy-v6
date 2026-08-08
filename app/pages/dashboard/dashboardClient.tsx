@@ -12,12 +12,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Folder } from "lucide-react";
+import { Folder, PieChart as BudgetIcon, Target, HelpCircle } from "lucide-react";
 import { DynamicIcon } from "@/lib/dynamicIcon";
 
-interface CategoryItem {
-  id: number;
+export interface SpendingItem {
+  id: string;
   name: string;
+  type: "category" | "budget" | "goal" | "uncategorized";
   icon?: string;
   color: string;
   amount: number;
@@ -25,12 +26,11 @@ interface CategoryItem {
 }
 
 interface DashboardChartsProps {
-  categoryBreakdown: CategoryItem[];
+  categoryBreakdown: SpendingItem[];
   totalExpenses: number;
   totalIncome: number;
 }
 
-// Custom Tooltip for Pie Chart
 const CustomPieTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -39,6 +39,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
         <div className="flex items-center gap-1.5 font-semibold text-white">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
           {data.name}
+          <span className="text-[10px] text-zinc-400 capitalize">({data.type})</span>
         </div>
         <div className="text-white font-bold">
           ${data.amount?.toFixed(2)}{" "}
@@ -50,13 +51,15 @@ const CustomPieTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Helper for rendering dynamic icons inside legend pills
-const renderCategoryIcon = (iconName?: string | null) => {
-  if (!iconName) return <Folder className="w-3.5 h-3.5" />;
-  if (/\p{Extended_Pictographic}/u.test(iconName)) {
-    return <span className="text-xs leading-none">{iconName}</span>;
+const renderCategoryIcon = (item: SpendingItem) => {
+  if (item.type === "budget") return <BudgetIcon className="w-3.5 h-3.5" />;
+  if (item.type === "goal") return <Target className="w-3.5 h-3.5" />;
+  if (item.type === "uncategorized" || !item.icon) return <HelpCircle className="w-3.5 h-3.5" />;
+
+  if (/\p{Extended_Pictographic}/u.test(item.icon)) {
+    return <span className="text-xs leading-none">{item.icon}</span>;
   }
-  const formattedName = iconName.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  const formattedName = item.icon.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
   return <DynamicIcon name={formattedName} className="w-3.5 h-3.5" />;
 };
 
@@ -66,6 +69,7 @@ export default function DashboardCharts({
   totalIncome,
 }: DashboardChartsProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "category" | "budget" | "goal">("all");
 
   useEffect(() => {
     setIsMounted(true);
@@ -75,6 +79,11 @@ export default function DashboardCharts({
     { name: "Income", amount: totalIncome, color: "#10b981" },
     { name: "Expenses", amount: totalExpenses, color: "#f43f5e" },
   ];
+
+  const filteredBreakdown = categoryBreakdown.filter((item) => {
+    if (activeTab === "all") return true;
+    return item.type === activeTab;
+  });
 
   if (!isMounted) {
     return (
@@ -87,19 +96,31 @@ export default function DashboardCharts({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
-      {/* SPENDING BY CATEGORY CARD */}
+      {/* SPENDING BREAKDOWN CARD */}
       <div className="p-5 bg-[#0a0f1d] border border-zinc-800/80 rounded-2xl flex flex-col justify-between shadow-xl relative overflow-hidden">
         
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
+        {/* Header & Filter Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800/60 pb-3 gap-2">
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Spending by Category</h3>
-            <p className="text-[11px] text-foreground mt-0.5">Distribution across active categories</p>
+            <h3 className="text-sm font-semibold text-foreground">Spending Breakdown</h3>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Distribution across categories, budgets & goals</p>
           </div>
-          <span className="text-xs font-bold text-sky-400 bg-sky-950/40 border border-sky-800/40 px-2.5 py-1 rounded-full">
-            {categoryBreakdown.length} Categories
-          </span>
+
+          <div className="flex items-center gap-1 bg-[#0e1626] p-1 rounded-lg border border-zinc-800/80 self-start sm:self-auto">
+            {(["all", "category", "budget", "goal"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-2 py-0.5 text-[10px] font-semibold rounded-md capitalize transition-colors ${
+                  activeTab === tab
+                    ? "bg-zinc-800 text-white shadow-sm"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content Layout */}
@@ -112,9 +133,9 @@ export default function DashboardCharts({
                 <Tooltip content={<CustomPieTooltip />} />
                 <Pie
                   data={
-                    categoryBreakdown.length > 0 
-                      ? categoryBreakdown 
-                      : [{ name: "None", amount: 1, color: "#27272a", percentage: "0%" }]
+                    filteredBreakdown.length > 0
+                      ? filteredBreakdown
+                      : [{ name: "None", amount: 1, color: "#27272a", percentage: "0%", type: "uncategorized" }]
                   }
                   innerRadius={62}
                   outerRadius={82}
@@ -122,10 +143,10 @@ export default function DashboardCharts({
                   dataKey="amount"
                   stroke="transparent"
                 >
-                  {categoryBreakdown.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
+                  {filteredBreakdown.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
                       className="hover:opacity-80 transition-opacity cursor-pointer"
                     />
                   ))}
@@ -135,61 +156,66 @@ export default function DashboardCharts({
 
             {/* Donut Center Overlay */}
             <div className="absolute text-center pointer-events-none flex flex-col items-center">
-              <span className="text-[10px] text-foreground font-semibold tracking-wider uppercase">
+              <span className="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase">
                 Expenses
               </span>
-              <span className="text-base font-extrabold text-foreground mt-0.5">
+              <span className="text-base font-extrabold text-white mt-0.5">
                 ${totalExpenses.toFixed(0)}
               </span>
             </div>
           </div>
 
-          {/* Category Progress List */}
+          {/* Progress Item List */}
           <div className="sm:col-span-7 flex flex-col gap-2.5 max-h-52 overflow-y-auto pr-1">
-            {categoryBreakdown.length === 0 ? (
-              <p className="text-xs text-foreground text-center py-6">No spending data available.</p>
+            {filteredBreakdown.length === 0 ? (
+              <p className="text-xs text-zinc-400 text-center py-6">No spending records found.</p>
             ) : (
-              categoryBreakdown.map((cat) => {
-                const numPercentage = parseFloat(cat.percentage) || 0;
+              filteredBreakdown.map((item) => {
+                const numPercentage = parseFloat(item.percentage) || 0;
 
                 return (
                   <div
-                    key={cat.id}
+                    key={item.id}
                     className="p-2.5 bg-[#0e1626]/80 border border-zinc-800/60 rounded-xl space-y-1.5 hover:border-zinc-700 transition-colors"
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span 
+                        <span
                           className="w-6 h-6 rounded-lg flex items-center justify-center text-xs shrink-0"
-                          style={{ 
-                            backgroundColor: `${cat.color}20`,
-                            color: cat.color 
+                          style={{
+                            backgroundColor: `${item.color}20`,
+                            color: item.color,
                           }}
                         >
-                          {renderCategoryIcon(cat.icon)}
+                          {renderCategoryIcon(item)}
                         </span>
-                        <span className="font-semibold text-foreground truncate max-w-[100px]">
-                          {cat.name}
-                        </span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-white truncate max-w-[100px]">
+                            {item.name}
+                          </span>
+                          <span className="text-[9px] text-zinc-400 uppercase tracking-wide">
+                            {item.type}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="font-bold text-foreground">
-                          ${cat.amount.toFixed(2)}
+                        <span className="font-bold text-white">
+                          ${item.amount.toFixed(2)}
                         </span>
-                        <span className="text-[10px] text-foreground ml-1.5 font-medium">
-                          {cat.percentage}
+                        <span className="text-[10px] text-zinc-400 ml-1.5 font-medium">
+                          {item.percentage}
                         </span>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
                     <div className="w-full bg-zinc-800/60 h-1 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full rounded-full transition-all duration-500"
-                        style={{ 
+                        style={{
                           width: `${Math.min(numPercentage, 100)}%`,
-                          backgroundColor: cat.color
+                          backgroundColor: item.color,
                         }}
                       />
                     </div>
@@ -207,7 +233,7 @@ export default function DashboardCharts({
         <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Total Overview</h3>
-            <p className="text-[11px] text-foreground mt-0.5">Compare overall income vs expenses</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Compare overall income vs expenses</p>
           </div>
           <span className="text-xs text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-800/40">
             Net: +${(totalIncome - totalExpenses).toFixed(2)}
@@ -217,15 +243,15 @@ export default function DashboardCharts({
         <div className="h-52 mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={overviewData} barSize={50}>
-              <XAxis dataKey="name" stroke="currentColor" className="text-foreground" fontSize={11} tickLine={false} />
-              <YAxis stroke="currentColor" className="text-foreground" fontSize={11} tickLine={false} />
+              <XAxis dataKey="name" stroke="#9ca3af" fontSize={11} tickLine={false} />
+              <YAxis stroke="#9ca3af" fontSize={11} tickLine={false} />
               <Tooltip
                 cursor={{ fill: "rgba(255, 255, 255, 0.03)" }}
-                contentStyle={{ 
-                  backgroundColor: "#0e1626", 
-                  borderColor: "#27272a", 
+                contentStyle={{
+                  backgroundColor: "#0e1626",
+                  borderColor: "#27272a",
                   borderRadius: "12px",
-                  color: "#ffffff"
+                  color: "#ffffff",
                 }}
                 itemStyle={{ color: "#008cea" }}
                 labelStyle={{ color: "#ffffff", fontWeight: "bold" }}
