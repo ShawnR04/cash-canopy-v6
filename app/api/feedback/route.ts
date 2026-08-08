@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     const { error } = await resend.emails.send({
       from: "CashCanopy Feedback <onboarding@resend.dev>",
-      to: "cashcanopydev@gmail.com",
+      to: ["cashcanopydev@gmail.com"],
       subject: `App Feedback from ${username || "User"}`,
       react: FeedbackEmail({ username, email, feedback }),
     });
