@@ -131,11 +131,13 @@ export default function ExportData({ username }: ExportDataProps) {
         const formattedAmount = `${isIncome ? "+" : "-"}$${Math.abs(Number(t.amount || 0)).toFixed(2)}`;
 
         return [
-          t.date ? new Date(t.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }) : "N/A",
+          t.date
+            ? new Date(t.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "N/A",
           t.description || "N/A",
           t.categoryName || "Uncategorized",
           isIncome ? "Income" : "Expense",
@@ -143,25 +145,35 @@ export default function ExportData({ username }: ExportDataProps) {
         ];
       });
 
+      // A4 width is 595.28pt; margins of 40pt left/right give a total table width of 515.28pt
       autoTable(doc, {
         startY: 180,
         margin: { left: 40, right: 40 },
         head: [["Date", "Description", "Classification", "Type", "Amount"]],
         body: tableData,
         theme: "striped",
+        styles: {
+          halign: "center", // Text alignment within each cell
+          valign: "middle", // Vertical alignment within each cell
+        },
         headStyles: {
           fillColor: [59, 130, 246],
           textColor: [255, 255, 255],
           fontStyle: "bold",
           fontSize: 9,
+          halign: "center",
         },
         bodyStyles: {
           fontSize: 8.5,
           textColor: [51, 65, 85],
+          halign: "center",
         },
         columnStyles: {
-          3: { fontStyle: "italic" },
-          4: { halign: "right", fontStyle: "bold" },
+          0: { halign: "center" },
+          1: { halign: "center" },
+          2: { halign: "center" },
+          3: { halign: "center", fontStyle: "italic" },
+          4: { halign: "center", fontStyle: "bold" },
         },
         didParseCell: (cellData) => {
           if (cellData.section === "body" && cellData.column.index === 4) {
@@ -188,7 +200,8 @@ export default function ExportData({ username }: ExportDataProps) {
         const goalsTableData = goals.map((g: any) => {
           const current = Number(g.currentAmount || 0);
           const target = Number(g.targetAmount || 0);
-          const progress = target > 0 ? ((current / target) * 100).toFixed(1) : "0.0";
+          const progress =
+            target > 0 ? ((current / target) * 100).toFixed(1) : "0.0";
 
           return [
             g.name || "Goal",
@@ -205,17 +218,28 @@ export default function ExportData({ username }: ExportDataProps) {
           head: [["Goal Name", "Target Date", "Saved", "Target", "Progress"]],
           body: goalsTableData,
           theme: "striped",
+          styles: {
+            halign: "center",
+            valign: "middle",
+          },
           headStyles: {
             fillColor: [59, 130, 246],
             textColor: [255, 255, 255],
             fontStyle: "bold",
             fontSize: 9,
+            halign: "center",
           },
-          bodyStyles: { fontSize: 8.5, textColor: [51, 65, 85] },
+          bodyStyles: {
+            fontSize: 8.5,
+            textColor: [51, 65, 85],
+            halign: "center",
+          },
           columnStyles: {
-            2: { halign: "right" },
-            3: { halign: "right" },
-            4: { halign: "right", fontStyle: "bold" },
+            0: { halign: "center" },
+            1: { halign: "center" },
+            2: { halign: "center" },
+            3: { halign: "center" },
+            4: { halign: "center", fontStyle: "bold" },
           },
         });
       }
