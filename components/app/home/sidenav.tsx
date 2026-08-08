@@ -20,16 +20,18 @@ import ExportData from "./exportData";
 import { Button } from "@/components/ui/button";
 
 interface SidenavProps {
+  userId?: string;
   username: string;
   email?: string;
   userImage?: string | null;
   version: string;
   activeTab: string;
   setActiveTab: (id: string) => void;
-  onSendFeedback?: () => void; // Optional handler prop for opening feedback modal/link
+  onSendFeedback?: () => void;
 }
 
 export default function SideNav({
+  userId,
   username,
   email,
   userImage,
@@ -88,6 +90,7 @@ export default function SideNav({
 
           <div>
             <AccountSwitcher
+              userId={userId}
               currentUsername={username}
               currentEmail={email}
               userImage={userImage}
@@ -98,6 +101,7 @@ export default function SideNav({
         {/* Desktop */}
         <div className="hidden w-full md:flex md:items-center md:justify-end pl-55">
           <AccountSwitcher
+            userId={userId}
             currentUsername={username}
             currentEmail={email}
             userImage={userImage}
@@ -181,7 +185,6 @@ export default function SideNav({
 
         {/* Bottom Section */}
         <div className="w-full space-y-3">
-
           {/* Export Data */}
           <div className="flex items-center justify-center">
             <ExportData />

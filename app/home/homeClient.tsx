@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Send, X } from "lucide-react";
 
 interface HomeProps {
+  userId?: string;
   username: string;
   email?: string;
   userImage?: string | null;
@@ -19,6 +20,7 @@ interface HomeProps {
 }
 
 export default function HomeClient({
+  userId,
   username,
   email,
   userImage,
@@ -126,6 +128,7 @@ export default function HomeClient({
         {/* Side Navigation */}
         <div className="w-full md:w-auto shrink-0">
           <Sidenav
+            userId={userId}
             username={username}
             email={email}
             userImage={userImage}

@@ -4,26 +4,39 @@ import React, { useState, useEffect, useRef } from "react";
 import { Users, Check, Plus, User, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getUserAccounts, UserAccountOption } from "@/app/actions/auth";
+import { getDeviceAccounts, saveDeviceAccount, DeviceAccount } from "@/lib/deviceAccounts";
 
 interface AccountSwitcherProps {
   currentUsername?: string;
   currentEmail?: string;
   userImage?: string | null;
+  userId?: string; // Add current userId to save the active user state
 }
 
 export default function AccountSwitcher({
   currentUsername,
   currentEmail,
   userImage,
+  userId,
 }: AccountSwitcherProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [accounts, setAccounts] = useState<UserAccountOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [accounts, setAccounts] = useState<DeviceAccount[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  // Close popover when clicking outside
+  // Sync current logged-in user into localStorage on component load
+  useEffect(() => {
+    if (currentEmail && userId) {
+      saveDeviceAccount({
+        id: userId,
+        username: currentUsername,
+        email: currentEmail,
+        image: userImage,
+      });
+    }
+  }, [userId, currentUsername, currentEmail, userImage]);
+
+  // Close popover on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
@@ -34,16 +47,14 @@ export default function AccountSwitcher({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch accounts on popover open
-  const handleToggle = async () => {
+  // Fetch device accounts from local browser storage on toggle
+  const handleToggle = () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
 
-    if (nextState && accounts.length === 0) {
-      setIsLoading(true);
-      const fetched = await getUserAccounts();
-      setAccounts(fetched);
-      setIsLoading(false);
+    if (nextState) {
+      const localAccounts = getDeviceAccounts();
+      setAccounts(localAccounts);
     }
   };
 
@@ -84,7 +95,11 @@ export default function AccountSwitcher({
             {currentUsername || "Switch Account"}
           </span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
       {/* Popover Menu */}
@@ -104,13 +119,11 @@ export default function AccountSwitcher({
 
           <div className="py-1 space-y-0.5 max-h-48 overflow-y-auto">
             <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Switch To
+              Device Accounts
             </p>
 
-            {isLoading ? (
-              <p className="px-3 py-2 text-xs text-muted-foreground">Loading accounts...</p>
-            ) : accounts.length === 0 ? (
-              <p className="px-3 py-2 text-xs text-muted-foreground">No other accounts logged in.</p>
+            {accounts.length === 0 ? (
+              <p className="px-3 py-2 text-xs text-muted-foreground">No other accounts saved on this device.</p>
             ) : (
               accounts.map((acc) => {
                 const isActive = acc.username === currentUsername || acc.email === currentEmail;
