@@ -243,3 +243,8 @@ npm install recharts
 ```bash
 npm i resend jspdf jspdf-autotable bcrypt-ts
 ```
+
+#### Deleting evevrything until a specific commit
+```bash
+git reset --hard ['the commit'] && git clean -fdx
+```
