@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from 'sonner'
 import { Analytics } from "@vercel/analytics/next"
 
-
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
@@ -57,6 +56,8 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors position="top-center" duration={900} />
+          {/* Add the Analytics component here */}
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
