@@ -27,7 +27,7 @@ export interface ToastItem extends ToastOptions {
 }
 
 const TOAST_LIMIT = 5;
-const TOAST_REMOVE_DELAY = 1000;
+const TOAST_REMOVE_DELAY = 500;
 
 type Action =
   | { type: "ADD_TOAST"; toast: ToastItem }
