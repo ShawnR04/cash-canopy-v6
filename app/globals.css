@@ -57,8 +57,8 @@
 
 :root {
   /* Main Layout */
-  --background: oklch(0.98 0 0); /* Soft clean white off-bg */
-  --foreground: oklch(0.14 0.02 245); /* Very deep navy/charcoal */
+  --background: #f8f8f8; /* Soft clean white off-bg */
+  --foreground: #040a11; /* Very deep navy/charcoal */
 
   /* Shadcn Component Logic */
   --card: oklch(1 0 0); 
