@@ -497,3 +497,12 @@
   margin-bottom: 40px;
   margin-top: 12px;
 }
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

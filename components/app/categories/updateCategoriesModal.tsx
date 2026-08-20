@@ -4,7 +4,7 @@ import React, { useState, useMemo, useTransition } from "react";
 import { X } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 import { deleteCategory, updateCategory } from "@/app/actions/categories";
 import { Button } from "@/components/ui/button";
@@ -134,13 +134,21 @@ export default function UpdateCategoriesModal({
     const result = await updateCategory(data);
 
     if (result?.success) {
-      toast.success("Category updated successfully");
+      toast({
+        variant: "success",
+        title: "Category Updated",
+        description: "Category updated successfully!",
+      });
       setIsOpen(false);
       startTransition(() => {
         router.refresh();
       });
     } else {
-      toast.error(result?.error || "Something went wrong.");
+      toast({
+        variant: "error",
+        title: "Update Failed",
+        description: result?.error || "Something went wrong.",
+      });
     }
 
     setIsSubmitting(false);
@@ -155,14 +163,22 @@ export default function UpdateCategoriesModal({
 
     const result = await deleteCategory(deleteData);
     if (result?.success) {
-      toast.success(`${category.name} deleted successfully!`);
+      toast({
+        variant: "success",
+        title: "Category Deleted",
+        description: `${category.name} deleted successfully!`,
+      });
       setIsOpen(false);
       setIsDeleting(false);
       startTransition(() => {
         router.refresh();
       });
     } else {
-      toast.error(result?.error || "Something went wrong.");
+      toast({
+        variant: "error",
+        title: "Deletion Failed",
+        description: result?.error || "Something went wrong.",
+      });
       setIsDeleting(false);
     }
   };

@@ -9,7 +9,7 @@ import {
   Target,
   Loader2
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { DynamicIcon } from '@/lib/dynamicIcon';
 import { deleteTransaction } from '@/app/actions/transactions';
 import UpdateTransactionModal, { TransactionOption } from './updateTransactions';
@@ -46,18 +46,28 @@ export default function TransactionsTable({ transactions = [], options, onEdit, 
       const res = await deleteTransaction(id);
 
       if (res.success) {
-        toast.success(
-          description 
-            ? `Deleted "${description}" successfully` 
-            : "Transaction deleted successfully"
-        );
+        toast({
+          variant: "success",
+          title: "Transaction Deleted",
+          description: description 
+            ? `Deleted "${description}" successfully.` 
+            : "Transaction deleted successfully.",
+        });
         onDelete?.(id);
       } else {
-        toast.error(res.error || "Failed to delete transaction.");
+        toast({
+          variant: "error",
+          title: "Delete Failed",
+          description: res.error || "Failed to delete transaction.",
+        });
       }
     } catch (error) {
       console.error("Failed to delete transaction:", error);
-      toast.error("An unexpected error occurred while deleting.");
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "An unexpected error occurred while deleting.",
+      });
     } finally {
       setDeletingId(null);
     }

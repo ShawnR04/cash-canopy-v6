@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { updateTransaction } from "@/app/actions/transactions";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 interface OptionItem {
   id: number;
@@ -174,15 +174,27 @@ export default function UpdateTransactionModal({
       const result = await updateTransaction(payload);
 
       if (result?.success) {
-        toast.success("Transaction updated successfully!");
+        toast({
+          variant: "success",
+          title: "Transaction Updated",
+          description: "Transaction updated successfully!",
+        });
         setIsOpen(false);
         router.refresh();
       } else {
-        toast.error(result?.error || "Failed to update transaction.");
+        toast({
+          variant: "error",
+          title: "Update Failed",
+          description: result?.error || "Failed to update transaction.",
+        });
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while updating the transaction.");
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "An error occurred while updating the transaction.",
+      });
     } finally {
       setIsSubmitting(false);
     }

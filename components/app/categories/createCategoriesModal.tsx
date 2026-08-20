@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { isFilled } from '@/lib/checkIsFilled';
 import { Button } from '@/components/ui/button';
 import { createCategory } from '@/app/actions/categories';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { DynamicIcon } from '@/lib/dynamicIcon';
 
 interface OpenModalProps {
@@ -77,13 +77,11 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
     }));
   };
 
-  // --- SOLUTION 1: DYNAMIC LUCIDE SEARCH ---
+  // Dynamic Lucide search
   const filteredIcons = useMemo(() => {
     const searchTerm = formData.icon.trim().toLowerCase();
 
-    // 1. Extract all valid icon export names from lucide-react
     const allLucideIconNames = Object.keys(LucideIcons).filter((key) => {
-      // Exclude internal React utility exports, types, and helper components
       return (
         key !== "default" &&
         key !== "createLucideIcon" &&
@@ -91,12 +89,10 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
       );
     });
 
-    // 2. If search input is empty, return default set
     if (!searchTerm) {
       return DEFAULT_SUGGESTED_ICONS;
     }
 
-    // 3. Search through ALL Lucide icons (limited to 35 for render performance)
     return allLucideIconNames
       .filter((iconName) => iconName.toLowerCase().includes(searchTerm))
       .slice(0, 35);
@@ -120,10 +116,19 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
         userId: "",
       });
 
-      toast.success("Category created successfully");
+      toast({
+        variant: "success",
+        title: "Category Created",
+        description: "Category created successfully!",
+      });
       setIsOpen(false);
     } catch (error) {
-      toast.error("Error creating category. Make sure you are logged in!");
+      console.error(error);
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Error creating category. Make sure you are logged in!",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +224,7 @@ export default function CreateCategoriesModal({ isOpen, setIsOpen }: OpenModalPr
               {formData.icon.trim() === ""
                 ? "Popular suggestions:"
                 : filteredIcons.length > 0
-                ? `Showing matching Lucide icons:`
+                ? "Showing matching Lucide icons:"
                 : "No exact icon match found, but custom Lucide string will still work!"}
             </p>
 

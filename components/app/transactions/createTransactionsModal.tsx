@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createTransaction } from "@/app/actions/transactions";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 interface OpenModalProps {
   isOpen: boolean;
@@ -141,20 +141,33 @@ export default function CreateTransactionsModal({
       });
 
       if (result?.success) {
-        toast.success("Transaction created successfully!");
+        toast({
+          variant: "success",
+          title: "Transaction Created",
+          description: "Transaction created successfully!",
+        });
         setIsOpen(false);
-        // Triggers Next.js Server Component data refresh so Goal Cards update instantly
         router.refresh();
       } else {
-        toast.error(result?.error || "Failed to create transaction.");
+        toast({
+          variant: "error",
+          title: "Creation Failed",
+          description: result?.error || "Failed to create transaction.",
+        });
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while creating the transaction.");
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "An error occurred while creating the transaction.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -282,7 +295,7 @@ export default function CreateTransactionsModal({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Type (Disabled for Income when Goal is selected) */}
+              {/* Type */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label className="custom-modal-label">Type</Label>
@@ -349,7 +362,7 @@ export default function CreateTransactionsModal({
               </div>
             </div>
 
-            {/* Target Selectors: Category, Budget, Goal */}
+            {/* Target Selectors */}
             <div className="grid grid-cols-3 gap-3">
               {/* Category */}
               <div className="group flex flex-col gap-2">

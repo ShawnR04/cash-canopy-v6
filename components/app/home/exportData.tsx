@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getExportData } from "@/app/actions/export";
@@ -16,7 +16,13 @@ export default function ExportData({ username }: ExportDataProps) {
 
   const handleExportPDF = async () => {
     setIsExporting(true);
-    const toastId = toast.loading("Generating your financial report...");
+
+    const loadingToast = toast({
+      variant: "info",
+      title: "Generating Report",
+      description: "Generating your financial report...",
+      duration: 0,
+    });
 
     try {
       const data = await getExportData();
@@ -153,8 +159,8 @@ export default function ExportData({ username }: ExportDataProps) {
         body: tableData,
         theme: "striped",
         styles: {
-          halign: "center", // Text alignment within each cell
-          valign: "middle", // Vertical alignment within each cell
+          halign: "center",
+          valign: "middle",
         },
         headStyles: {
           fillColor: [59, 130, 246],
@@ -264,13 +270,23 @@ export default function ExportData({ username }: ExportDataProps) {
           .slice(0, 10)}.pdf`
       );
 
-      toast.success("Financial report exported successfully!", { id: toastId });
+      loadingToast.dismiss();
+      toast({
+        variant: "success",
+        title: "Report Exported",
+        description: "Financial report exported successfully!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to export financial report.",
-        { id: toastId }
-      );
+      loadingToast.dismiss();
+      toast({
+        variant: "error",
+        title: "Export Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to export financial report.",
+      });
     } finally {
       setIsExporting(false);
     }

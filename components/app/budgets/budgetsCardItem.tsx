@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import UpdateBudgetsModal from "./updateBudgetsModal";
 import { Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { deleteBudget } from "@/app/actions/budgets";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { CategoryOption } from "./createBudgetsModal";
 
 export type BudgetPeriod = "Monthly" | "Weekly" | "Yearly" | "Custom";
@@ -105,11 +105,19 @@ export default function BudgetsCardItem({
     const [_, result] = await Promise.all([timerPromise, deletePromise]);
 
     if (result?.success) {
-      toast.success(`${budget.name} deleted successfully!`);
+      toast({
+        variant: "success",
+        title: "Budget Deleted",
+        description: `${budget.name} deleted successfully!`,
+      });
       setShowDeleteConfirm(false);
       setIsMenuOpen(false);
     } else {
-      toast.error(result?.error || "Something went wrong.");
+      toast({
+        variant: "error",
+        title: "Error",
+        description: result?.error || "Something went wrong.",
+      });
     }
     setIsDeleting(false);
   };
@@ -244,7 +252,7 @@ export default function BudgetsCardItem({
           </div>
         )}
 
-        {/* ================= DELETE CONFIRMATION POPOVER ================= */}
+        {/* Delete Confirmation Popover */}
         {showDeleteConfirm && (
           <div
             className="absolute z-50 top-12 right-0 w-64 rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-4 shadow-xl animate-in fade-in-0 zoom-in-95"

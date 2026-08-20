@@ -1,10 +1,10 @@
-import React, { useState, useTransition } from 'react'
-import { CategoryOption } from './createBudgetsModal';
-import { useRouter } from 'next/navigation';
-import { isFilled } from '@/lib/checkIsFilled';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import React, { useState, useTransition } from "react";
+import { CategoryOption } from "./createBudgetsModal";
+import { useRouter } from "next/navigation";
+import { isFilled } from "@/lib/checkIsFilled";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X } from 'lucide-react';
-import { updateBudget } from '@/app/actions/budgets';
-import { toast } from 'sonner';
+import { X } from "lucide-react";
+import { updateBudget } from "@/app/actions/budgets";
+import { toast } from "@/components/ui/use-toast";
 
 interface OpenModalProps {
   isOpen: boolean;
@@ -40,7 +40,12 @@ const formatDateForInput = (d?: string | Date | null): string => {
   return isNaN(dateObj.getTime()) ? "" : dateObj.toISOString().split("T")[0];
 };
 
-export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, budget }: OpenModalProps) {
+export default function UpdateBudgetsModal({
+  isOpen,
+  setIsOpen,
+  categoryOption,
+  budget,
+}: OpenModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -55,7 +60,9 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
     categoryId: budget.categoryId ? String(budget.categoryId) : "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -81,38 +88,47 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const data = new FormData();
-        data.append("id", String(budget.id));
-        data.append("name",formData.name);
-        data.append("amount", formData.amount);
-        data.append("currency", formData.currency);
-        data.append("period", formData.period);
-        data.append("startDate", formData.startDate);
-        data.append("endDate", formData.endDate);
-        data.append("categoryId", formData.categoryId);
+    const data = new FormData();
+    data.append("id", String(budget.id));
+    data.append("name", formData.name);
+    data.append("amount", formData.amount);
+    data.append("currency", formData.currency);
+    data.append("period", formData.period);
+    data.append("startDate", formData.startDate);
+    data.append("endDate", formData.endDate);
+    data.append("categoryId", formData.categoryId);
 
-        setIsSubmitting(true);
+    setIsSubmitting(true);
 
-        const result = await updateBudget(data);
+    const result = await updateBudget(data);
 
-        if(result?.success){
-            toast.success("Budgets updated successfully");
-            setFormData((prev) => ({
-                ...prev,
-            }));
+    if (result?.success) {
+      toast({
+        variant: "success",
+        title: "Budget Updated",
+        description: "Budget updated successfully!",
+      });
 
-            setIsOpen(false);
-            startTransition(() => {
-              router.refresh();
-            });
-        }else{
-            toast.error(result?.error || "Something went wrong.");
-        }
+      setFormData((prev) => ({
+        ...prev,
+      }));
 
-        setIsSubmitting(false);
-    };
+      setIsOpen(false);
+      startTransition(() => {
+        router.refresh();
+      });
+    } else {
+      toast({
+        variant: "error",
+        title: "Update Failed",
+        description: result?.error || "Something went wrong.",
+      });
+    }
+
+    setIsSubmitting(false);
+  };
 
   return (
     <>
@@ -120,9 +136,9 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
         <div className="background-glow" />
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="flex items-center justify-between relative">
-            <div className="flex items-center max-w-19/20 ">
+            <div className="flex items-center max-w-19/20">
               <h1 className="form-heading">
-                Update Category <span>{formData.name}</span>
+                Update Budget: <span>{formData.name}</span>
               </h1>
             </div>
             <button
@@ -137,31 +153,33 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
 
           <div className="flex flex-col gap-3 mt-5">
             {/* Name */}
-              <div className="group flex flex-col gap-2">
-                <div className="flex justify-between items-center gap-2">
-                  <Label htmlFor="name" className="custom-modal-label">
-                    Budget Name
-                  </Label>
-                  <Label
-                    className={`isfilled-badge ${
-                      fieldStatus.name ? "badge-success" : "badge-destructive"
-                    }`}
-                  >
-                    {fieldStatus.name ? "✓ Done" : "Required"}
-                  </Label>
-                </div>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder=""
-                  className={`h-11 ${
-                    fieldStatus.name ? "focus-visible:ring-success border-success/30" : ""
+            <div className="group flex flex-col gap-2">
+              <div className="flex justify-between items-center gap-2">
+                <Label htmlFor="name" className="custom-modal-label">
+                  Budget Name
+                </Label>
+                <Label
+                  className={`isfilled-badge ${
+                    fieldStatus.name ? "badge-success" : "badge-destructive"
                   }`}
-                />
+                >
+                  {fieldStatus.name ? "✓ Done" : "Required"}
+                </Label>
               </div>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder=""
+                className={`h-11 ${
+                  fieldStatus.name
+                    ? "focus-visible:ring-success border-success/30"
+                    : ""
+                }`}
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Amount */}
@@ -186,7 +204,9 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.amount ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.amount
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
@@ -206,14 +226,11 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
                   </Label>
                 </div>
                 <Select
-                  id="currency"
-                  name="currency"
-                  required
                   value={formData.currency}
                   onValueChange={(value) => {
                     setFormData((prev) => ({
                       ...prev,
-                      currency: value ?? ""
+                      currency: value ?? "",
                     }));
                   }}
                 >
@@ -228,6 +245,42 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Category */}
+            <div className="group flex flex-col gap-2">
+              <div className="flex justify-between items-center gap-2">
+                <Label htmlFor="categoryId" className="custom-modal-label">
+                  Category
+                </Label>
+                <Label
+                  className={`isfilled-badge ${
+                    fieldStatus.categoryId ? "badge-success" : "badge-destructive"
+                  }`}
+                >
+                  {fieldStatus.categoryId ? "✓ Done" : "Required"}
+                </Label>
+              </div>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    categoryId: value ?? "",
+                  }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Category..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOption.map((cat) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Period */}
@@ -267,7 +320,7 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* StartDate */}
+              {/* Start Date */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label htmlFor="startDate" className="custom-modal-label">
@@ -290,12 +343,14 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.startDate ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.startDate
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
 
-              {/* EndDate */}
+              {/* End Date */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label htmlFor="endDate" className="custom-modal-label">
@@ -318,7 +373,9 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.endDate ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.endDate
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
@@ -336,7 +393,7 @@ export default function UpdateBudgetsModal({ isOpen, setIsOpen, categoryOption, 
 
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isPending}
                 className="modal-button h-11"
               >
                 {isSubmitting ? "Saving..." : "Update Budget"}

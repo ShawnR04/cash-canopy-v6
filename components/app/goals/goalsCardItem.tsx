@@ -4,7 +4,7 @@ import { updateGoalStatus, deleteGoal } from "@/app/actions/goals";
 import { useState, useTransition, useEffect, useRef } from "react";
 import UpdateGoalsModal from "./updateGoalsModal";
 import { Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 interface Goal {
   id: number;
@@ -37,7 +37,7 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle Confirmed Delete Action with 1.5s Minimum Loader Duration
+  // Handle Confirmed Delete Action with 2.0s Minimum Loader Duration
   const confirmDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDeleting(true);
@@ -45,18 +45,25 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
     const formData = new FormData();
     formData.append("id", String(goal.id));
 
-    // Guarantee minimum duration of 1500ms
     const timerPromise = new Promise((resolve) => setTimeout(resolve, 2000));
     const deletePromise = deleteGoal(formData);
 
     const [_, result] = await Promise.all([timerPromise, deletePromise]);
 
     if (result?.success) {
-      toast.success(`${goal.name} deleted successfully!`);
+      toast({
+        variant: "success",
+        title: "Goal Deleted",
+        description: `${goal.name} deleted successfully!`,
+      });
       setShowDeleteConfirm(false);
       setIsMenuOpen(false);
     } else {
-      toast.error(result?.error || "Failed to delete goal.");
+      toast({
+        variant: "error",
+        title: "Delete Failed",
+        description: result?.error || "Failed to delete goal.",
+      });
     }
     setIsDeleting(false);
   };
@@ -103,6 +110,11 @@ export default function GoalsCardItem({ goal }: { goal: Goal }) {
         await updateGoalStatus(goal.id, nextStatus);
       } catch (error) {
         console.error("Failed to update status on server", error);
+        toast({
+          variant: "error",
+          title: "Error",
+          description: "Failed to update status on server.",
+        });
       }
     });
   };

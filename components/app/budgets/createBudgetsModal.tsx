@@ -1,8 +1,8 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { isFilled } from '@/lib/checkIsFilled';
-import { X } from 'lucide-react';
-import React, { useState } from 'react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { isFilled } from "@/lib/checkIsFilled";
+import { X } from "lucide-react";
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -10,9 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from '@/components/ui/button';
-import { createBudget } from '@/app/actions/budgets';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { createBudget } from "@/app/actions/budgets";
+import { toast } from "@/components/ui/use-toast";
 
 interface OpenModalProps {
   isOpen: boolean;
@@ -27,7 +27,11 @@ export interface CategoryOption {
   color: string;
 }
 
-export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }: OpenModalProps) {
+export default function CreateBudgetsModal({
+  isOpen,
+  setIsOpen,
+  categoryOption,
+}: OpenModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   type BudgetFormData = {
@@ -47,10 +51,12 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
     period: "Monthly",
     startDate: "",
     endDate: "",
-    categoryId: ""
+    categoryId: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -80,7 +86,7 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
     setIsSubmitting(true);
 
     try {
-      // Build native FormData matching the server action expects
+      // Build native FormData matching what the server action expects
       const payload = new FormData();
       payload.append("name", formData.name);
       payload.append("amount", formData.amount);
@@ -93,14 +99,26 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
       const result = await createBudget(payload);
 
       if (result.success) {
-        toast.success("Budget created successfully");
+        toast({
+          variant: "success",
+          title: "Budget Created",
+          description: "Budget created successfully!",
+        });
         setIsOpen(false);
       } else {
-        toast.error(result.error || "Failed to create budget");
+        toast({
+          variant: "error",
+          title: "Creation Failed",
+          description: result.error || "Failed to create budget.",
+        });
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error creating budget. Make sure you are logged in");
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Error creating budget. Make sure you are logged in.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +170,9 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.name ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.name
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
@@ -179,7 +199,9 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.amount ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.amount
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
@@ -194,26 +216,25 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   </Label>
                   <Label
                     className={`isfilled-badge ${
-                      fieldStatus.categoryId ? "badge-success" : "badge-destructive"
+                      fieldStatus.categoryId
+                        ? "badge-success"
+                        : "badge-destructive"
                     }`}
                   >
                     {fieldStatus.categoryId ? "✓ Done" : "Required"}
                   </Label>
                 </div>
                 <Select
-                  id="categoryId"
-                  name="categoryId"
-                  required
                   value={formData.categoryId}
                   onValueChange={(value) => {
                     setFormData((prev) => ({
                       ...prev,
-                      categoryId: value ?? ""
+                      categoryId: value ?? "",
                     }));
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Currency..." />
+                    <SelectValue placeholder="Select Category..." />
                   </SelectTrigger>
                   <SelectContent>
                     {categoryOption.map((cat) => (
@@ -233,21 +254,20 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   </Label>
                   <Label
                     className={`isfilled-badge ${
-                      fieldStatus.currency ? "badge-success" : "badge-destructive"
+                      fieldStatus.currency
+                        ? "badge-success"
+                        : "badge-destructive"
                     }`}
                   >
                     {fieldStatus.currency ? "✓ Done" : "Required"}
                   </Label>
                 </div>
                 <Select
-                  id="currency"
-                  name="currency"
-                  required
                   value={formData.currency}
                   onValueChange={(value) => {
                     setFormData((prev) => ({
                       ...prev,
-                      currency: value ?? ""
+                      currency: value ?? "",
                     }));
                   }}
                 >
@@ -301,7 +321,7 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* StartDate */}
+              {/* Start Date */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label htmlFor="startDate" className="custom-modal-label">
@@ -309,7 +329,9 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   </Label>
                   <Label
                     className={`isfilled-badge ${
-                      fieldStatus.startDate ? "badge-success" : "badge-destructive"
+                      fieldStatus.startDate
+                        ? "badge-success"
+                        : "badge-destructive"
                     }`}
                   >
                     {fieldStatus.startDate ? "✓ Done" : "Required"}
@@ -324,12 +346,14 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.startDate ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.startDate
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
 
-              {/* EndDate */}
+              {/* End Date */}
               <div className="group flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-2">
                   <Label htmlFor="endDate" className="custom-modal-label">
@@ -337,7 +361,9 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   </Label>
                   <Label
                     className={`isfilled-badge ${
-                      fieldStatus.endDate ? "badge-success" : "badge-destructive"
+                      fieldStatus.endDate
+                        ? "badge-success"
+                        : "badge-destructive"
                     }`}
                   >
                     {fieldStatus.endDate ? "✓ Done" : "Required"}
@@ -352,7 +378,9 @@ export default function CreateBudgetsModal({ isOpen, setIsOpen, categoryOption }
                   onChange={handleChange}
                   placeholder=""
                   className={`h-11 ${
-                    fieldStatus.endDate ? "focus-visible:ring-success border-success/30" : ""
+                    fieldStatus.endDate
+                      ? "focus-visible:ring-success border-success/30"
+                      : ""
                   }`}
                 />
               </div>
