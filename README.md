@@ -1,10 +1,10 @@
-# <img src="./public/favicon.ico" width="45" height="45" align="center" /> Cash Canopy
+# <img src="./public/favicon.ico" width="48" height="48" align="center" /> Cash Canopy
 
 <div align="center">
 
 ### Take Control of Your Money. Grow Your Financial Future.
 
-A modern, high-performance personal finance platform built to help users **track spending, manage budgets, monitor financial goals, and understand their money through meaningful insights**.
+A modern full-stack personal finance platform designed to help users **track spending, manage budgets, monitor financial goals, and understand their financial habits through meaningful insights.**
 
 <br />
 
@@ -12,7 +12,7 @@ A modern, high-performance personal finance platform built to help users **track
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38BDF8?style=for-the-badge\&logo=tailwindcss\&logoColor=white)](https://tailwindcss.com/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=for-the-badge\&logo=drizzle\&logoColor=black)](https://orm.drizzle.team/)
-[![Turso](https://img.shields.io/badge/Turso-4FF8D2?style=for-the-badge\&logo=turso\&logoColor=black)](https://turso.tech/)
+[![Neon](https://img.shields.io/badge/Neon_PostgreSQL-00E699?style=for-the-badge\&logo=neon\&logoColor=black)](https://neon.tech/)
 
 <br />
 
@@ -32,46 +32,48 @@ A modern, high-performance personal finance platform built to help users **track
 
 ---
 
-## <img src="https://api.iconify.design/lucide/book-open.svg" width="24" height="24" /> About The Project
+## <img src="https://api.iconify.design/lucide/book-open.svg" width="24" height="24" /> About Cash Canopy
 
-**Cash Canopy** is a high-performance, full-stack personal finance platform engineered to give users greater control over their financial health.
+**Cash Canopy** is a modern personal finance platform built to make managing money simpler, clearer, and more insightful.
 
-By combining data visualization, transaction categorization, budget tracking, and milestone tracking, Cash Canopy transforms financial data into actionable insights through a fast, responsive, and polished user experience.
+The application gives users a centralized place to manage their financial activity. From recording transactions and organizing spending to tracking budgets and financial goals, Cash Canopy helps turn everyday financial data into information that is easier to understand.
 
-Managing money shouldn't require complicated spreadsheets or confusing financial software. Cash Canopy provides a clean and intuitive experience where users can organize transactions, track spending, manage budgets, monitor financial progress, and gain a better understanding of their financial habits.
+Rather than simply storing numbers, Cash Canopy helps users see the bigger picture behind their finances.
 
 ### Built With a Focus On
 
 <table>
 <tr>
 <td align="center" width="20%">
-<img src="https://api.iconify.design/lucide/zap.svg" width="32" height="32" /><br />
+<img src="https://api.iconify.design/lucide/zap.svg" width="34" /><br /><br />
 <b>Performance</b>
 </td>
 <td align="center" width="20%">
-<img src="https://api.iconify.design/lucide/code-2.svg" width="32" height="32" /><br />
+<img src="https://api.iconify.design/lucide/code-2.svg" width="34" /><br /><br />
 <b>Clean Code</b>
 </td>
 <td align="center" width="20%">
-<img src="https://api.iconify.design/lucide/shield-check.svg" width="32" height="32" /><br />
-<b>Stability</b>
+<img src="https://api.iconify.design/lucide/shield-check.svg" width="34" /><br /><br />
+<b>Reliability</b>
 </td>
 <td align="center" width="20%">
-<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="32" height="32" /><br />
+<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="34" /><br /><br />
 <b>Insights</b>
 </td>
 <td align="center" width="20%">
-<img src="https://api.iconify.design/lucide/sparkles.svg" width="32" height="32" /><br />
-<b>Great UX</b>
+<img src="https://api.iconify.design/lucide/sparkles.svg" width="34" /><br /><br />
+<b>User Experience</b>
 </td>
 </tr>
 </table>
+
+<br />
 
 > **Your money tells a story. Cash Canopy helps you understand it.**
 
 ---
 
-# <img src="https://api.iconify.design/lucide/sparkles.svg" width="28" height="28" /> Features
+# <img src="https://api.iconify.design/lucide/sparkles.svg" width="28" /> Features
 
 <div align="center">
 
@@ -80,37 +82,37 @@ Managing money shouldn't require complicated spreadsheets or confusing financial
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/layout-dashboard.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/layout-dashboard.svg" width="46" />
 
 ### Smart Dashboard
 
-Get an instant overview of your financial activity.
+View your financial activity in one place.
 
-Track income, expenses, recent activity, category spending, and financial trends in one place.
-
-</td>
-
-<td align="center" width="33%" valign="top">
-
-<img src="https://api.iconify.design/lucide/receipt.svg" width="42" height="42" />
-
-### Transactions
-
-Add, edit, delete, and organize your financial activity.
-
-Keep track of income and expenses with dates, descriptions, and categories.
+Track income, expenses, recent activity, spending categories, and financial trends.
 
 </td>
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/tags.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/receipt.svg" width="46" />
 
-### Categories
+### Transaction Management
 
-Organize spending into meaningful categories.
+Manage your financial activity with ease.
 
-Understand exactly where your money is going.
+Add, edit, delete, and organize transactions while keeping track of both income and expenses.
+
+</td>
+
+<td align="center" width="33%" valign="top">
+
+<img src="https://api.iconify.design/lucide/tags.svg" width="46" />
+
+### Smart Categories
+
+Organize transactions into meaningful categories.
+
+Understand where your money is going and identify your biggest areas of spending.
 
 </td>
 
@@ -120,37 +122,37 @@ Understand exactly where your money is going.
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/wallet.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/wallet.svg" width="46" />
 
 ### Budget Tracking
 
-Create budgets, set spending limits, and monitor your progress.
+Create budgets and set spending limits.
 
-Know when your spending needs attention.
+Monitor your progress and see when your spending requires attention.
 
 </td>
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/target.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/target.svg" width="46" />
 
 ### Goals & Milestones
 
-Set financial targets and track your progress.
+Set financial goals and monitor your progress.
 
-Stay motivated as you work toward important milestones.
+Stay motivated as you work toward important financial milestones.
 
 </td>
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="46" />
 
 ### Reports & Insights
 
-Transform your financial data into useful information.
+Turn your financial activity into useful insights.
 
-Understand spending patterns, trends, and historical activity.
+Explore spending patterns, trends, historical activity, and financial performance.
 
 </td>
 
@@ -160,31 +162,31 @@ Understand spending patterns, trends, and historical activity.
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/download.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/download.svg" width="46" />
 
-### Export Your Data
+### Export Data
 
-Export your financial information for record keeping, analysis, and personal documentation.
+Export your financial information for personal records, analysis, and documentation.
 
 </td>
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/user-round.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/user-round.svg" width="46" />
 
 ### Personalized Experience
 
-Every user has access to their own transactions, budgets, categories, goals, reports, and profile data.
+Each user has access to their own financial data, including transactions, budgets, categories, goals, reports, and profile information.
 
 </td>
 
 <td align="center" width="33%" valign="top">
 
-<img src="https://api.iconify.design/lucide/shield-check.svg" width="42" height="42" />
+<img src="https://api.iconify.design/lucide/lock-keyhole.svg" width="46" />
 
-### User-Focused Data
+### Secure Data Access
 
-Your financial experience is structured around your own data and activity.
+Financial data is structured around individual users to support a personalized and protected experience.
 
 </td>
 
@@ -195,36 +197,36 @@ Your financial experience is structured around your own data and activity.
 
 ---
 
-# <img src="https://api.iconify.design/lucide/layers-3.svg" width="28" height="28" /> Built With
+# <img src="https://api.iconify.design/lucide/layers-3.svg" width="28" /> Tech Stack
 
 <div align="center">
 
-| Technology                                                                            | Purpose                           |
-| :------------------------------------------------------------------------------------ | :-------------------------------- |
-| <img src="https://cdn.simpleicons.org/nextdotjs" width="18" /> **Next.js**            | Full-stack React framework        |
-| <img src="https://cdn.simpleicons.org/react" width="18" /> **React**                  | User interface development        |
-| <img src="https://cdn.simpleicons.org/typescript" width="18" /> **TypeScript**        | Type-safe application development |
-| <img src="https://cdn.simpleicons.org/tailwindcss" width="18" /> **Tailwind CSS**     | Responsive styling                |
-| <img src="https://cdn.simpleicons.org/drizzle" width="18" /> **Drizzle ORM**          | Type-safe database queries        |
-| <img src="https://cdn.simpleicons.org/turso" width="18" /> **Turso / libSQL**         | Database infrastructure           |
-| <img src="https://cdn.simpleicons.org/shadcnui" width="18" /> **shadcn/ui**           | Reusable UI components            |
-| <img src="https://api.iconify.design/lucide/icons.svg" width="18" /> **Lucide React** | Modern icon library               |
-| <img src="https://api.iconify.design/lucide/bell.svg" width="18" /> **Sonner**        | Toast notifications               |
-| <img src="https://cdn.simpleicons.org/chartdotjs" width="18" /> **Chart.js**          | Financial data visualization      |
-| <img src="https://cdn.simpleicons.org/react" width="18" /> **React Email**            | Transactional email templates     |
-| <img src="https://cdn.simpleicons.org/vercel" width="18" /> **Vercel**                | Deployment                        |
+| Technology                                                                            | Purpose                            |
+| :------------------------------------------------------------------------------------ | :--------------------------------- |
+| <img src="https://cdn.simpleicons.org/nextdotjs" width="19" /> **Next.js**            | Full-stack React framework         |
+| <img src="https://cdn.simpleicons.org/react" width="19" /> **React**                  | User interface development         |
+| <img src="https://cdn.simpleicons.org/typescript" width="19" /> **TypeScript**        | Type-safe application development  |
+| <img src="https://cdn.simpleicons.org/tailwindcss" width="19" /> **Tailwind CSS**     | Responsive styling                 |
+| <img src="https://cdn.simpleicons.org/drizzle" width="19" /> **Drizzle ORM**          | Type-safe ORM and database toolkit |
+| <img src="https://cdn.simpleicons.org/neon" width="19" /> **Neon PostgreSQL**         | Serverless PostgreSQL database     |
+| <img src="https://cdn.simpleicons.org/shadcnui" width="19" /> **shadcn/ui**           | Reusable interface components      |
+| <img src="https://api.iconify.design/lucide/icons.svg" width="19" /> **Lucide React** | Icon library                       |
+| <img src="https://api.iconify.design/lucide/bell.svg" width="19" /> **Sonner**        | Toast notifications                |
+| <img src="https://cdn.simpleicons.org/chartdotjs" width="19" /> **Chart.js**          | Financial data visualization       |
+| <img src="https://cdn.simpleicons.org/react" width="19" /> **React Email**            | Email templates                    |
+| <img src="https://cdn.simpleicons.org/vercel" width="19" /> **Vercel**                | Application deployment             |
 
 </div>
 
 ---
 
-# <img src="https://api.iconify.design/lucide/folder-tree.svg" width="28" height="28" /> Project Structure
+# <img src="https://api.iconify.design/lucide/folder-tree.svg" width="28" /> Project Structure
 
-```text
+```text id="jz0x3p"
 cash-canopy-v6/
 │
 ├── app/                    # Next.js App Router pages and routes
-│   ├── dashboard/          # Dashboard functionality
+│   ├── dashboard/          # Dashboard pages and functionality
 │   ├── actions/            # Server actions
 │   └── ...
 │
@@ -232,13 +234,13 @@ cash-canopy-v6/
 │   ├── ui/                 # Reusable UI components
 │   └── ...
 │
-├── db/                     # Database configuration and schema
+├── db/                     # Database schema and configuration
 │
 ├── drizzle/                # Database migrations
 │
 ├── emails/                 # Email templates
 │
-├── lib/                    # Utility functions and shared logic
+├── lib/                    # Shared utilities and application logic
 │
 ├── public/                 # Static assets
 │
@@ -250,61 +252,66 @@ cash-canopy-v6/
 
 ---
 
-# <img src="https://api.iconify.design/lucide/rocket.svg" width="28" height="28" /> Getting Started
+# <img src="https://api.iconify.design/lucide/rocket.svg" width="28" /> Getting Started
 
 Follow these steps to run Cash Canopy locally.
 
-### 1. Clone the Repository
+### <img src="https://api.iconify.design/lucide/git-fork.svg" width="20" /> 1. Clone the Repository
 
-```bash
+```bash id="i3m9cw"
 git clone https://github.com/ShawnR04/cash-canopy-v6.git
 cd cash-canopy-v6
 ```
 
-### 2. Install Dependencies
+### <img src="https://api.iconify.design/lucide/package.svg" width="20" /> 2. Install Dependencies
 
-```bash
+```bash id="x7cf5r"
 npm install
 ```
 
-### 3. Configure Environment Variables
+### <img src="https://api.iconify.design/lucide/settings-2.svg" width="20" /> 3. Configure Environment Variables
 
 Create a `.env.local` file in the root of the project.
 
-```env
-TURSO_CONNECTION_URL=your_turso_database_url
-TURSO_AUTH_TOKEN=your_turso_auth_token
+```env id="y2wfmq"
+DATABASE_URL=your_neon_postgresql_connection_string
 ```
 
-Add any additional environment variables required by your authentication, email, or external services.
+Add any additional environment variables required for authentication, email services, or other integrations used by your application.
 
 > <img src="https://api.iconify.design/lucide/triangle-alert.svg" width="16" /> **Never commit `.env.local` files or secret keys to GitHub.**
 
-### 4. Configure the Database
+### <img src="https://api.iconify.design/lucide/database.svg" width="20" /> 4. Configure the Database
 
 Generate your Drizzle migrations:
 
-```bash
+```bash id="z7umtv"
 npx drizzle-kit generate
 ```
 
-Apply your migrations using the database workflow configured for the project.
+Apply the migrations to your Neon PostgreSQL database:
 
-### 5. Start the Development Server
+```bash id="ty6mmo"
+npx drizzle-kit migrate
+```
 
-```bash
+### <img src="https://api.iconify.design/lucide/play.svg" width="20" /> 5. Start the Development Server
+
+```bash id="gse9d5"
 npm run dev
 ```
 
-Visit:
+Open:
 
-```text
+```text id="4f1e8j"
 http://localhost:3000
 ```
 
+Your local instance of Cash Canopy should now be running.
+
 ---
 
-# <img src="https://api.iconify.design/lucide/images.svg" width="28" height="28" /> Application Preview
+# <img src="https://api.iconify.design/lucide/images.svg" width="28" /> Application Preview
 
 <div align="center">
 
@@ -334,11 +341,11 @@ http://localhost:3000
 
 ---
 
-# <img src="https://api.iconify.design/lucide/brain.svg" width="28" height="28" /> Why Cash Canopy?
+# <img src="https://api.iconify.design/lucide/brain.svg" width="28" /> Why Cash Canopy?
 
-Most personal finance applications focus on simply recording numbers.
+Managing finances is about more than recording transactions.
 
-Cash Canopy aims to go further.
+Cash Canopy is designed around a simple process:
 
 <div align="center">
 
@@ -348,34 +355,38 @@ Cash Canopy aims to go further.
 
 <table>
 <tr>
+
 <td align="center">
-
-<img src="https://api.iconify.design/lucide/banknote.svg" width="38" /><br /> <b>Your Money</b>
-
+<img src="https://api.iconify.design/lucide/banknote.svg" width="42" /><br />
+<b>Your Money</b>
 </td>
-<td align="center">→</td>
+
+<td align="center"><b>→</b></td>
+
 <td align="center">
-
-<img src="https://api.iconify.design/lucide/receipt.svg" width="38" /><br /> <b>Transactions</b>
-
+<img src="https://api.iconify.design/lucide/receipt.svg" width="42" /><br />
+<b>Transactions</b>
 </td>
-<td align="center">→</td>
+
+<td align="center"><b>→</b></td>
+
 <td align="center">
-
-<img src="https://api.iconify.design/lucide/tags.svg" width="38" /><br /> <b>Categories</b>
-
+<img src="https://api.iconify.design/lucide/tags.svg" width="42" /><br />
+<b>Categories</b>
 </td>
-<td align="center">→</td>
+
+<td align="center"><b>→</b></td>
+
 <td align="center">
-
-<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="38" /><br /> <b>Insights</b>
-
+<img src="https://api.iconify.design/lucide/chart-no-axes-combined.svg" width="42" /><br />
+<b>Insights</b>
 </td>
-<td align="center">→</td>
+
+<td align="center"><b>→</b></td>
+
 <td align="center">
-
-<img src="https://api.iconify.design/lucide/target.svg" width="38" /><br /> <b>Goals</b>
-
+<img src="https://api.iconify.design/lucide/target.svg" width="42" /><br />
+<b>Goals</b>
 </td>
 
 </tr>
@@ -383,131 +394,129 @@ Cash Canopy aims to go further.
 
 </div>
 
-> **The goal is simple: Help users make better financial decisions by making their financial data easier to understand.**
+<br />
+
+> **The goal is simple: help users make better financial decisions by making their financial data easier to understand.**
 
 ---
 
-# <img src="https://api.iconify.design/lucide/shield-check.svg" width="28" height="28" /> Data & Privacy
+# <img src="https://api.iconify.design/lucide/shield-check.svg" width="28" /> Data & Privacy
 
-Cash Canopy is designed around user-specific financial data.
+Cash Canopy is built around user-specific financial information.
 
-Application data is structured so that users interact with their own financial information, including transactions, categories, budgets, goals, and other financial records.
+Users interact with their own financial data, including transactions, categories, budgets, goals, reports, and other account-related information.
 
-When deploying your own version of Cash Canopy, make sure to:
+When deploying your own version of Cash Canopy:
 
-* <img src="https://api.iconify.design/lucide/key-round.svg" width="16" /> Secure all environment variables
+* <img src="https://api.iconify.design/lucide/key-round.svg" width="16" /> Secure environment variables
 * <img src="https://api.iconify.design/lucide/lock-keyhole.svg" width="16" /> Never expose database credentials
 * <img src="https://api.iconify.design/lucide/user-check.svg" width="16" /> Implement proper authentication
 * <img src="https://api.iconify.design/lucide/badge-check.svg" width="16" /> Validate user input
 * <img src="https://api.iconify.design/lucide/shield.svg" width="16" /> Authorize database operations
-* <img src="https://api.iconify.design/lucide/users-round.svg" width="16" /> Ensure users can only access their own data
+* <img src="https://api.iconify.design/lucide/users-round.svg" width="16" /> Ensure users can only access their own information
 
 ---
 
-# <img src="https://api.iconify.design/lucide/map.svg" width="28" height="28" /> Future Improvements
+# <img src="https://api.iconify.design/lucide/map.svg" width="28" /> Roadmap
 
-Cash Canopy is continuously evolving.
-
-Potential future improvements include:
+Future improvements planned for Cash Canopy include:
 
 * [ ] Advanced financial analytics
 * [ ] Recurring transactions
 * [ ] More detailed budgeting tools
 * [ ] Improved goal tracking
-* [ ] CSV data import
+* [ ] CSV transaction imports
 * [ ] Additional export formats
 * [ ] Financial notifications and reminders
 * [ ] Enhanced dashboard customization
 * [ ] Dark mode improvements
 * [ ] Mobile experience enhancements
-* [ ] More advanced reports
+* [ ] Advanced reports
 * [ ] Automated spending insights
 
 ---
 
-# <img src="https://api.iconify.design/lucide/git-pull-request.svg" width="28" height="28" /> Contributing
+# <img src="https://api.iconify.design/lucide/git-pull-request.svg" width="28" /> Contributing
 
-Contributions, ideas, and improvements are welcome.
+Contributions, suggestions, and improvements are welcome.
 
-### How to Contribute
+1. Fork the repository.
+2. Create a feature branch.
 
-1. Fork the repository
-2. Create a new branch
-
-```bash
+```bash id="o0wukd"
 git checkout -b feature/amazing-feature
 ```
 
-3. Make your changes
-4. Commit your changes
+3. Make your changes.
+4. Commit your changes.
 
-```bash
+```bash id="q1xwnq"
 git commit -m "Add amazing feature"
 ```
 
-5. Push to your branch
+5. Push your branch.
 
-```bash
+```bash id="tib55c"
 git push origin feature/amazing-feature
 ```
 
-6. Open a Pull Request
+6. Open a Pull Request.
 
 ---
 
-# <img src="https://api.iconify.design/lucide/bug.svg" width="28" height="28" /> Found a Bug?
+# <img src="https://api.iconify.design/lucide/bug.svg" width="28" /> Found a Bug?
 
-If you find a bug or experience an issue, please open an issue on GitHub.
+Found an issue?
 
 <a href="https://github.com/ShawnR04/cash-canopy-v6/issues">
   <img src="https://img.shields.io/badge/Open%20an%20Issue-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
 </a>
 
-Please include:
+When reporting a bug, please include:
 
 * A clear description of the problem
-* Steps to reproduce it
+* Steps to reproduce the issue
 * Expected behavior
 * Actual behavior
-* Screenshots, if applicable
+* Screenshots, where applicable
 
 ---
 
-# <img src="https://api.iconify.design/lucide/lightbulb.svg" width="28" height="28" /> Feature Requests
+# <img src="https://api.iconify.design/lucide/lightbulb.svg" width="28" /> Feature Requests
 
-Have an idea that could make Cash Canopy better?
-
-Feel free to open an issue with:
-
-* A description of the feature
-* The problem it solves
-* Any examples or mockups
+Have an idea for Cash Canopy?
 
 <a href="https://github.com/ShawnR04/cash-canopy-v6/issues">
   <img src="https://img.shields.io/badge/Request%20a%20Feature-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
 </a>
 
+Include:
+
+* The feature you would like to see
+* The problem it would solve
+* Any examples, designs, or mockups
+
 ---
 
-# <img src="https://api.iconify.design/lucide/globe.svg" width="28" height="28" /> Live Application
+# <img src="https://api.iconify.design/lucide/globe.svg" width="28" /> Live Application
 
 <div align="center">
 
 ### Try Cash Canopy
 
 <a href="https://cashcanopy.dev/">
-  <img src="https://img.shields.io/badge/CashCanopy.dev-Visit%20the%20App-success?style=for-the-badge&logo=vercel&logoColor=white" />
+  <img src="https://img.shields.io/badge/cashcanopy.dev-Visit%20the%20App-success?style=for-the-badge&logo=vercel&logoColor=white" />
 </a>
 
 <br /><br />
 
-**Track smarter. Spend wiser. Grow stronger.**
+### Track smarter. Spend wiser. Grow stronger.
 
 </div>
 
 ---
 
-# <img src="https://api.iconify.design/lucide/code-2.svg" width="28" height="28" /> Author
+# <img src="https://api.iconify.design/lucide/code-2.svg" width="28" /> Author
 
 <div align="center">
 
@@ -525,7 +534,7 @@ Feel free to open an issue with:
 
 <div align="center">
 
-<img src="./public/favicon.ico" width="55" height="55" />
+<img src="./public/favicon.ico" width="58" height="58" />
 
 ## Cash Canopy
 
@@ -533,10 +542,10 @@ Feel free to open an issue with:
 
 <br />
 
-**If you like the project, consider giving the repository a star.**
+If you like the project, consider giving the repository a **star**.
 
-<br />
+<br /><br />
 
-<sub>Built with modern web technologies and a focus on helping people better understand their finances.</sub>
+<sub>Built with modern web technologies and designed to make personal finance easier to understand.</sub>
 
 </div>
