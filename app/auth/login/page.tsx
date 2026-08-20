@@ -44,7 +44,7 @@ export default function Login() {
       if (result.error) {
         toast({
           variant: "error",
-          duration:2000,
+          duration:700,
           title: "Login Failed",
           description: result.error.message || "Failed to sign in.",
         });

@@ -46,7 +46,7 @@ export default function SignUp() {
       if (result.error) {
         toast({
           variant: "error",
-          duration: 3000,
+          duration: 700,
           title: "Sign Up Failed",
           description: result.error.message || "Failed to create account.",
         });

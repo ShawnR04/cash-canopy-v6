@@ -62,7 +62,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster defaultDuration={3500} position="top-center" />
+          <Toaster defaultDuration={1000} position="top-center" />
           <Analytics />
         </ThemeProvider>
       </body>
