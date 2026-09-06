@@ -67,7 +67,7 @@
   --popover-foreground: oklch(0.14 0.02 245); 
 
   /* Primary Color - Vibrant Blue */
-  --primary: oklch(0.62 0.18 245); 
+  --primary: #008cea; 
   --primary-foreground: oklch(1 0 0); 
 
   /* Secondary Color - Professional Corporate Blue */
@@ -75,7 +75,7 @@
   --secondary-foreground: oklch(1 0 0); 
 
   /* Muted Elements */
-  --muted: oklch(0.95 0.01 245); 
+  --muted: rgb(233, 239, 245); 
   --muted-foreground: oklch(0.55 0.02 245); 
 
   /* Accents */
